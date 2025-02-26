@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "wordpress.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "wordpress.labels" . | nindent 4 }}
 spec:
@@ -27,25 +28,7 @@ spec:
       serviceAccountName: {{ include "wordpress.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      initContainers:
-        - name: copy-wordpress-app
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          command: [sh, -cx]
-          args:
-            - >-
-              echo Copying Wordpress source ...;
-              ls -l /usr/src/wordpress/;
-              cp -r /usr/src/wordpress/. /wordpress-app/;
-              if [ -z "$(ls -A /wordpress-data/wp-content/)" ]; then echo "Copying initial files to wp-content ..."; cp -r /usr/src/wordpress/wp-content/* /wordpress-data/wp-content/; fi;
-          volumeMounts:
-            - mountPath: /wordpress-app/
-              name: wordpress-app
-            - mountPath: /wordpress-data/wp-content/
-              name: wordpress-data
-              subPath: wp-content
+      initContainers: []
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -125,7 +108,7 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
         - name: nginx
-          image: "{{ .Values.imageWeb.repository }}:{{ .Values.imageWeb.tag | default "alpine" }}"
+          image: "{{ .Values.nginx.repository }}:{{ .Values.nginx.tag | default "alpine" }}"
           #command: [nginx-debug, '-g', 'daemon off;']
           imagePullPolicy: "IfNotPresent"
           securityContext:

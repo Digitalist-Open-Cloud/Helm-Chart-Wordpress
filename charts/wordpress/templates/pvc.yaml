@@ -3,6 +3,7 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: {{ include "wordpress.fullname" . }}-data
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "wordpress.labels" . | nindent 4 }}
   {{- if .Values.commonAnnotations }}
@@ -14,4 +15,11 @@ spec:
   resources:
     requests:
       storage: {{ .Values.wordpress.persistence.size | quote }}
+{{- if .Values.wordpress.persistence.storageClass }}
+{{- if (eq "-" .Values.wordpress.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.wordpress.persistence.storageClass }}"
+{{- end }}
+{{- end }}
 {{- end }}
