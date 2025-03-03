@@ -11,6 +11,23 @@ nginx:
   # Overrides the image tag whose default is the chart appVersion.
   tag: 1.21.6
 
+env:
+  - name: DB_HOST
+    value: database.default.svc.cluster.local:3306
+  - name: DB_NAME
+    value: db_wordpress
+  - name: DB_USER
+    value: db_wordpress
+  - name: DB_PASSWORD
+    valueFromSecret:
+      secretName: mariadb
+      key: password
+  - name: DB_PREFIX
+    value: wp_
+## As:
+## imagePullSecrets:
+##   - name: myRegistryKeySecretName
+##
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
@@ -28,9 +45,9 @@ podAnnotations: {}
 
 podSecurityContext:
   runAsNonRoot: true
-  runAsUser: 12000
-  runAsGroup: 12000
-  fsGroup: 12000
+  runAsUser: 82
+  runAsGroup: 82
+  fsGroup: 82
 
 securityContext:
   allowPrivilegeEscalation: false
@@ -120,17 +137,20 @@ wordpress:
   ##  see: https://wordpress.org/support/article/editing-wp-config-php/
   config_extra: |-
     #### general settings
-    define('WP_CACHE', true );
-    define('DISALLOW_FILE_EDIT', true );
-    define('MEDIA_TRASH', true );
-    define('WP_POST_REVISIONS', '10' );
+    #define('WP_CACHE', true );
+    #define('DISALLOW_FILE_EDIT', true );
+    #define('MEDIA_TRASH', true );
+    #define('WP_POST_REVISIONS', '10' );
+    define( 'WP_DEBUG', true );
+    define( 'WP_DEBUG_LOG', true );
+    $_SERVER[‘HTTPS’]=’on’;
 
     #### memory limits
     # define('WP_MEMORY_LIMIT', '40' );       # default
     # define('WP_MAX_MEMORY_LIMIT', '256' );  # default
 
     #### network, multi-site settings
-    # define('MULTISITE', true);
+    define('MULTISITE', true);
     # define('SUBDOMAIN_INSTALL', true);
     # define('DOMAIN_CURRENT_SITE', 'example.com');
     # define('PATH_CURRENT_SITE', '/');
@@ -167,30 +187,6 @@ wordpress:
     accessMode: ReadWriteOnce
     size: 10Gi
 
-
-##
-## External Database Configuration
-##   create the database before deployment and grant all privileges to the user
-##
-database:
-  enabled: true
-  ## Database host
-  host: database.default.svc.cluster.local:3306
-
-  ## Database name
-  database: db_wordpress
-
-  ## non-root user for Wordpress Database
-  user: db_wordpress
-
-  ## Database password
-  password: "password"
-
-  ## Database table_prefix
-  table_prefix: wp_
-
-
-
 sidecars:
   []
 
@@ -206,7 +202,7 @@ extraConfigMap:
   create: false
   data: {}
   # You can create an extra config map, and attach data to it. This will be named
-  # {{ include "directus.fullname" . }}-extra-config-map
+  # {{ include "wordpress.fullname" . }}-extra-config-map
   # data:
   #   my.file: |
   #     foo: bar
@@ -216,10 +212,10 @@ extraVolumes: []
 # extraVolumes:
 # - name: mySecretVolume
 #   secret:
-#     secretName: directus-extra-secrets
+#     secretName: wordpress-extra-secrets
 # - name: my.file
 #   configMap:
-#     name: directus-extra-config-map
+#     name: wordpress-extra-config-map
 #     items:
 #     - key: "my.file"
 #       path: "/tmp/my.file"
@@ -230,3 +226,8 @@ extraVolumeMounts: []
 # - name: my.file
 #   mountPath: /tmp/my.file
 #   subPath: my.file
+
+# If enabled, it will mount a secret to a .env file
+dotenv:
+  enabled: false
+  name: wordpress

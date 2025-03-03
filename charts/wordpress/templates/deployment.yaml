@@ -9,6 +9,8 @@ spec:
 {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
 {{- end }}
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "wordpress.selectorLabels" . | nindent 6 }}
@@ -17,6 +19,8 @@ spec:
     {{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
+        checksum/values: {{ toJson .Values | sha256sum }}
+        checksum/config: {{ tpl (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     {{- end }}
       labels:
         {{- include "wordpress.selectorLabels" . | nindent 8 }}
@@ -28,7 +32,23 @@ spec:
       serviceAccountName: {{ include "wordpress.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      initContainers: []
+      initContainers:
+        - name: copy-wordpress
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: true
+            privileged: true
+          command: [sh, -cx]
+          args:
+            - >-
+              echo Copying WordPress source to volume;
+              ls -l /var/www/html;
+              cp -r /var/www/html/. /wordpress-app/;
+              chmod 444 /wordpress-app/web/wp-config.php
+          volumeMounts:
+            - mountPath: /wordpress-app/
+              name: wordpress-app
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -36,27 +56,23 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           env:
-            - name: WORDPRESS_DB_HOST
-              value: {{ .Values.database.host }}
-            - name: WORDPRESS_DB_NAME
-              value: {{ .Values.database.database }}
-            - name: WORDPRESS_DB_USER
-              value:  {{ .Values.database.user }}
-            - name: WORDPRESS_DB_PASSWORD_FILE
-              value: "/run/secrets/wordpress/db_password"
-            - name: WORDPRESS_TABLE_PREFIX
-              value: {{ .Values.database.table_prefix }}
             - name: WORDPRESS_CONFIG_EXTRA
               valueFrom:
                 configMapKeyRef:
                   name: {{ include "wordpress.fullname" . }}-config
                   key: env-wp-config-extra
-            - name: WORDPRESS_DEBUG
+            {{- range .Values.env }}
+            {{- if .valueFromSecret }}
+            - name: {{ .name }}
               valueFrom:
-                configMapKeyRef:
-                  name: {{ include "wordpress.fullname" . }}-config
-                  key: env-wp-debug
-                  optional: true
+                secretKeyRef:
+                  name: {{ .valueFromSecret.secretName | quote }}
+                  key: {{ .valueFromSecret.key | quote }}
+            {{- else if .value }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+            {{- end }}
           {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
@@ -82,11 +98,11 @@ spec:
               containerPort: 9000
               protocol: TCP
           volumeMounts:
-            - mountPath: /var/www/html/
+            - mountPath: /var/www/html
               name: wordpress-app
-            - mountPath: /var/www/html/wp-content/
+            - mountPath: /var/www/html/web/app/uploads/
               name: wordpress-data
-              subPath: wp-content
+              subPath: uploads
             - mountPath: /usr/local/etc/php-fpm.d/zz-docker.conf
               name: wordpress-config
               subPath: php-fpm-zz-docker.conf
@@ -96,15 +112,13 @@ spec:
             - mountPath: /usr/local/etc/php/conf.d/opcache-recommended.ini
               name: wordpress-config
               subPath: php-opcache-recommended.ini
-            - mountPath: /usr/local/bin/wp
-              name: wordpress-code
-              subPath: wp-cli
             - mountPath: /run/secrets/wordpress/
               name: wordpress-config
-          lifecycle:
-            postStart:
-              exec:
-                command: ["/bin/sh", "-c", "test -f /var/www/html/wp-config.php && chmod 444 /var/www/html/wp-config.php"]
+            {{- if .Values.dotenv.enabled }}
+            - name: dotenv-file
+              mountPath: /var/www/html/.env
+              subPath: .env
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
         - name: nginx
@@ -112,7 +126,9 @@ spec:
           #command: [nginx-debug, '-g', 'daemon off;']
           imagePullPolicy: "IfNotPresent"
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            runAsUser: 100
+            privileged: false
+            allowPrivilegeEscalation: false
           ports:
             - name: http
               containerPort: 8080
@@ -144,17 +160,25 @@ spec:
           volumeMounts:
             - mountPath: /var/www/html/
               name: wordpress-app
-            - mountPath: /var/www/html/wp-content/
+              readOnly: true
+            - mountPath: /var/www/html/web/app/uploads
               name: wordpress-data
-              subPath: wp-content
+              subPath: uploads
+              readOnly: true
             - mountPath: /etc/nginx/nginx.conf
               name: wordpress-config
               subPath: nginx.conf
+              readOnly: true
             - mountPath: /tmp/
               name: nginx-tmp
+            {{- if .Values.dotenv.enabled }}
+            - name: dotenv-file
+              mountPath: /var/www/html/.env
+              subPath: .env
+            {{- end }}
       volumes:
         - name: wordpress-app
-          emptyDir:
+          emptyDir: {}
         - name: wordpress-config
           configMap:
             name: {{ include "wordpress.fullname" . }}-config
@@ -164,10 +188,11 @@ spec:
         - name: nginx-tmp
           emptyDir:
             medium: Memory
-        - name: wordpress-code
-          configMap:
-            name: {{ include "wordpress.fullname" . }}-code
-            defaultMode: 0755
+        {{- if .Values.dotenv.enabled }}
+        - name: dotenv-file
+          secret:
+            secretName: {{ .Values.dotenv.name }}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

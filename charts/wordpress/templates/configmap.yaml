@@ -1,21 +1,3 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ include "wordpress.fullname" . }}-code
-  namespace: {{ .Release.Namespace }}
-  labels:
-    {{- include "wordpress.labels" . | nindent 4 }}
-data:
-  wp-cli: |-
-    #!/bin/sh
-    WP_PATH=/var/www/html/
-    CLI=/tmp/wp-cli.phar
-    if ! [ -f "$CLI" ]; then
-        curl https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o $CLI
-    fi
-    export PAGER="more"
-    php $CLI --path=$WP_PATH "$@"
-
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -25,10 +7,8 @@ metadata:
   labels:
     {{- include "wordpress.labels" . | nindent 4 }}
 data:
-  db_password: "{{ .Values.database.password }}"
   env-wp-config-extra: |
     {{ .Values.wordpress.config_extra | nindent 4 }}
-  env-wp-debug: ""
   php-fpm-zz-docker.conf: |-
     [global]
     daemonize = no
@@ -174,8 +154,6 @@ data:
         set_real_ip_from          127.0.0.1;
         real_ip_header            X-Forwarded-For;
 
-        # to boost I/O on HDD we can disable access logs
-        # access_log              off;
         log_format                main '$remote_addr - $status [$request] $body_bytes_sent '
                                      '"$http_referer" "$http_user_agent" via $realip_remote_addr';
         access_log                "/dev/stdout" main buffer=2048 flush=5s;
@@ -186,108 +164,82 @@ data:
         uwsgi_temp_path           /tmp/uwsgi_temp 1 2;
         scgi_temp_path            /tmp/scgi_temp 1 2;
 
-        ####################################
-        ### fastcgi cache start
-        #fastcgi_cache_path        /tmp/fastcgi-cache levels=1:2 keys_zone=WORDPRESS:100m inactive=10m;
-        #fastcgi_cache_key         "$scheme$request_method$host$request_uri";
-        #fastcgi_cache_use_stale   error timeout invalid_header http_500;
-        #fastcgi_ignore_headers    Cache-Control Expires Set-Cookie;
-        ### fastcgi cache end
-        ####################################
-
         server {
-          listen                  8080 default_server;
-          server_name             _;
-          root                    /var/www/html;
-          index                   index.php;
+            listen [::]:8080 default_server;
+            listen 8080 default_server;
 
-          location / {
-            # deliver files directly or from php
-            # $uri              - for regular files (html, css, js, jpg, ...)
-            # $uri/             - needed for indexes like /wp-config/ or /tag/nice/
-            # /index.php?$args  - sends the request to wordpress using fastcgi / php
-            try_files $uri $uri/ /index.php?$args;
-          }
+            server_name _;
+            root /var/www/html/web;
+            index index.php;
 
-          # DISABLE_DIRECT_CONTENT_PHP_EXECUTION
-          location ~ /(?:wp-content|wp-includes|uploads)/.*\.php$ {
-            deny all;
-            #access_log off;
-            #log_not_found off;
-          }
+            gzip on;
+            gzip_proxied any;
+            gzip_comp_level 4;
+            gzip_types text/css application/javascript image/svg+xml;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
 
-          # Deny access to load load-scripts.php, load-styles.php; can be used for DOS attacks;
-          location ~ \/wp-admin\/load\-(scripts|styles)\.php {
-            deny all;
-          }
+            # Serve static files, removing hashes in filenames for wp-includes and wp-admin
+            location ~* ^/wp/(wp-includes|wp-admin|wp-content)/.*\.(css|js)$ {
+                root /var/www/html/web;
 
-          # START Nginx Rewrites for Rank Math Sitemaps
-          rewrite ^/sitemap_index.xml$ /index.php?sitemap=1 last;
-          rewrite ^/([^/]+?)-sitemap([0-9]+)?.xml$ /index.php?sitemap=$1&sitemap_n=$2 last;
-          # END Nginx Rewrites for Rank Math Sitemaps
+                # First try to locate the file as-is or fallback to removing the hash
+                try_files $uri @strip_hash;
 
-          ####################################
-          ### fastcgi cache start
-          # define when to skip the cache
-          #set $skip_cache 0;
-          # Requests with a query string should not be cached
-          #if ($query_string != "") {
-          #  set $skip_cache 1;
-          #}
-          # Don't cache uris containing the following segments
-          #if ($request_uri ~ "/wp-admin/|/xmlrpc.php|wp-.*.php|index.php") {
-          #  set $skip_cache 1;
-          #}
-          # Don't use the cache for logged in users or recent commenters
-          #if ($http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_no_cache|wordpress_logged_in") {
-          #  set $skip_cache 1;
-          #}
-          ### fastcgi cache end
-          ####################################
-
-
-          # send .php requests to wordpress using (fastcgi)
-          location ~ [^/]\.php(/|$) {
-            # split the request path into its components
-            fastcgi_split_path_info ^(.+?\.php)(/.*)$;
-            # check if the requested php file exits;
-            # don't send the request to fastcgi if no such file exits (saves some resources)
-            if (!-f $document_root$fastcgi_script_name) {
-              return 404;
+                expires max;
+                log_not_found off;
+                access_log off;
             }
 
-            # include fastcgi_params from nginx directory (/etc/nginx/fastcgi_params)
-            include                         fastcgi_params;
-            # set the script filename (eg. /var/www/html/index.php)
-            fastcgi_param SCRIPT_FILENAME   $document_root$fastcgi_script_name;
-            fastcgi_param PATH_INFO         $fastcgi_path_info;
-            fastcgi_param PATH_TRANSLATED   $document_root$fastcgi_path_info;
-            fastcgi_index                   index.php;
-            # tell wordpress that the request came over https to avoid redirect-loops
-            fastcgi_param  REQUEST_SCHEME   'https';
-            fastcgi_param  HTTPS            'on';
-            # hide PHP header
-            fastcgi_hide_header             X-Powered-By;
+            location ~* ^/app/(plugins|themes)/.*\.(css|js)$ {
+                root /var/www/html/web;
 
-            # send the request to php
-            fastcgi_pass                    localhost:9000;
-            #fastcgi_pass                    unix:/run/php/fpm.sock;
+                # First try to locate the file as-is or fallback to removing the hash
+                try_files $uri @strip_hash;
 
-            ####################################
-            ### fastcgi cache start
-            #fastcgi_cache_methods           GET HEAD;
-            #fastcgi_cache_bypass            $skip_cache;
-            #fastcgi_no_cache                $skip_cache;
-            #fastcgi_cache                   WORDPRESS;
-            #fastcgi_cache_valid             10m;
-            #add_header X-FastCGI-Cache      $upstream_cache_status;
-            ### fastcgi cache end
-            ####################################
-          }
+                expires max;
+                log_not_found off;
+                access_log off;
+            }
 
-          # enable client cache for media files and fonts
-          location ~* \.(css|js|ico|gif|jpeg|jpg|webp|png|svg|eot|otf|woff|woff2|ttf|ogg|pdf)$ {
-            expires           120d;
-          }
+            # Fallback: Remove hash and look for non-hashed file
+            location @strip_hash {
+                # Rewrite to remove hash (e.g., .MS4w) and retry original path
+                rewrite "^(/.+)\.[A-Za-z0-9]+(\.css|\.js)$" "$1$2" last;
+
+                # Retry with a stripped hash or return 404 if the rewritten file could not be found
+                try_files $uri =404;
+            }
+
+            # General WordPress routing: Core rewrite rules
+            location / {
+                try_files $uri $uri/ /index.php?$args;
+            }
+
+            # PHP handling for WordPress
+            location ~ \.php$ {
+                fastcgi_split_path_info ^(.+\.php)(/.+)$;
+
+                if (!-f $document_root$fastcgi_script_name) {
+                    return 404;
+                }
+
+                include fastcgi_params;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                fastcgi_param PATH_INFO $fastcgi_path_info;
+
+                fastcgi_pass 127.0.0.1:9000;
+                fastcgi_hide_header X-Powered-By;
+            }
+
+            # Cache long-lived assets
+            location ~* \.(css|js|ico|gif|jpe?g|png|svg|webp|woff|woff2|ttf|eot|pdf)$ {
+                expires 120d;
+                log_not_found off;
+                access_log off;
+            }
         }
       }
