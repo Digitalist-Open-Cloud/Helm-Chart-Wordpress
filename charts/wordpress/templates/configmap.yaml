@@ -16,63 +16,25 @@ data:
     [www]
     listen = 9000
     listen.allowed_clients = ::1,127.0.0.1,10.42.0.1
-    ;listen.allowed_clients 127.0.0.1,10.42.0.0/16
-    ;listen = /run/php/fpm.sock
 
   php-opcache-recommended.ini: |-
-    ; Enables the opcode cache. When disabled, code is not optimised or cached.
-    ; default = 1
     opcache.enable=1
-
-    ; The size of the shared memory storage used by OPcache, in megabytes.
-    ; default = 128
     opcache.memory_consumption=128
-
-    ; The amount of memory for interned strings in Mbytes.
-    ; default = 8
     opcache.interned_strings_buffer=8
-
-    ; The maximum number of keys (scripts) in the OPcache hash table.
-    ; Only numbers between 200 and 100000 are allowed.
-    ; default = 10000
     opcache.max_accelerated_files=10000
-
-    ; Setting this directive to 1 will make PHP check the timestamps of
-    ; each file to see if it has been modified and if so it will update
-    ; the cache for that file. When set to 0 it will not update each files
-    ; cache and you will need to restart PHP each time you modify a file.
-    ; default = 1
-    opcache.validate_timestamps=1
-
-    ; How often (in seconds) to check file timestamps for changes to the
-    ; shared memory storage allocation.
-    ; default = 2
-    opcache.revalidate_freq=60
-
+    opcache.validate_timestamps=0
+    opcache.revalidate_freq=0
+    opcache.fast_shutdown=1
+    opcache.jit_buffer_size=500000000
+    opcache.jit=1235
 
   php-uploads.ini: |-
-    ; This sets the maximum amount of memory in bytes that a script is allowed to allocate.
     memory_limit = 256M
-
-    ; The maximum number of files allowed to be uploaded simultaneously.
     max_file_uploads = 50
-
-    ; The maximum size of an uploaded file
     upload_max_filesize = 96M
-
-    ; Sets max size of post data allowed. This setting also affects file upload.
-    ; To upload large files, this value must be larger than upload_max_filesize.
-    ; Generally speaking, memory_limit should be larger than post_max_size.
     post_max_size = 96M
-
-    ; This sets the maximum time in seconds a script is allowed to run before it is terminated by the parser.
     max_execution_time = 300
-
-    ; This sets the maximum time in seconds a script is allowed to parse input data, like POST and GET.
-    ; Timing begins at the moment PHP is invoked at the server and ends when execution begins. The default
-    ; setting is -1, which means that max_execution_time is used instead.
     max_input_time = 600
-
 
   nginx.conf: |-
       worker_processes            auto;
@@ -194,6 +156,19 @@ data:
                 access_log off;
             }
 
+            rewrite ^/(wp-.*.php)$ /wp/$1 last;
+            rewrite ^/(wp-(content|admin|includes).*) /wp/$1 last;
+
+            location = /arto/api/event {
+                proxy_pass https://plausible.io/api/event;
+                proxy_buffering on;
+                proxy_http_version 1.1;
+
+                proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_set_header X-Forwarded-Host  $host;
+            }
+
             location ~* ^/app/(plugins|themes)/.*\.(css|js)$ {
                 root /var/www/html/web;
 
@@ -216,6 +191,7 @@ data:
 
             # General WordPress routing: Core rewrite rules
             location / {
+
                 try_files $uri $uri/ /index.php?$args;
             }
 
@@ -240,6 +216,8 @@ data:
                 expires 120d;
                 log_not_found off;
                 access_log off;
+                add_header Expires "Thu, 31 Dec 2037 23:55:55 GMT";
+                add_header Cache-Control "max-age=315360000, public, immutable";
             }
         }
       }

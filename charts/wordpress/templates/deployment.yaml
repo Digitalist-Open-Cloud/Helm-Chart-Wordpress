@@ -52,6 +52,13 @@ spec:
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          {{- if .Values.postStart }}
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/sh", "-c", "{{ .Values.postStart }}"]
+          {{- end }}
+
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
