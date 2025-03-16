@@ -144,8 +144,6 @@ data:
             proxy_set_header Host $host;
             proxy_cache_bypass $http_upgrade;
 
-            rewrite /wp-admin$ $scheme://$host$request_uri/ permanent;
-
             # Serve static files, removing hashes in filenames for wp-includes and wp-admin
             location ~* ^/wp/(wp-includes|wp-admin|wp-content)/.*\.(css|js)$ {
                 root /var/www/html/web;
@@ -160,6 +158,7 @@ data:
 
             rewrite ^/(wp-.*.php)$ /wp/$1 last;
             rewrite ^/(wp-(content|admin|includes).*) /wp/$1 last;
+            rewrite /wp-admin$ /$1/ last;;
 
             # Deny access to any files with a .php extension in the uploads directory
             # Works in sub-directory installs and also in multisite network
