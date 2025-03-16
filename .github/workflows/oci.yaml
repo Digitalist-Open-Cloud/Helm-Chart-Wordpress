@@ -1,0 +1,30 @@
+on:
+  push:
+    tags:
+      - '*'
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: build oci
+        env:
+          REG_USER: "${{ secrets.REG_USER }}"
+          REG_PASS: "${{ secrets.REG_PASS }}"
+
+        run: |
+           VERSION=$(grep "^version:" charts/wordpress/Chart.yaml | cut -d ' ' -f2)
+           echo "Version to push: $VERSION"
+           cd charts
+           helm package wordpress
+           helm registry login registry-1.docker.io -u $REG_USER -p $REG_PASS
+           helm push wordpress-$VERSION.tgz oci://registry-1.docker.io/digitalist

@@ -1,6 +1,6 @@
 # WordPress PHP-FPM Nginx Helm Chart
 
-Run Bedrock Wordpress with php-fpm.
+Run Bedrock Wordpress with php-fpm and nginx.
 
 Any container should work, WordPress need be in path `/var/www/html/web`.
 
