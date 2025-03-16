@@ -158,6 +158,37 @@ data:
 
             rewrite ^/(wp-.*.php)$ /wp/$1 last;
             rewrite ^/(wp-(content|admin|includes).*) /wp/$1 last;
+            rewrite /wp-admin$ $scheme://$host$request_uri/ permanent;
+            # Deny access to any files with a .php extension in the uploads directory
+            # Works in sub-directory installs and also in multisite network
+            location ~* /(?:uploads|files)/.*\.php$ {
+              deny all;
+            }
+            location ~* /xmlrpc.php$ {
+              deny all;
+              access_log off;
+              log_not_found off;
+            }
+            location ~* /app/.*.php$ {
+              deny all;
+              access_log off;
+              log_not_found off;
+            }
+            location ~* /wp-includes/.*.php$ {
+              deny all;
+              access_log off;
+              log_not_found off;
+            }
+            location ~* /wp-content/.*.php$ {
+                    deny all;
+                    access_log off;
+                    log_not_found off;
+            }
+            location ~* /wp-admin/includes/.*.php$ {
+              deny all;
+              access_log off;
+              log_not_found off;
+            }
 
             location = /arto/api/event {
                 proxy_pass https://plausible.io/api/event;
