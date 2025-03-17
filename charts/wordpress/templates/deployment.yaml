@@ -50,6 +50,9 @@ spec:
             - mountPath: /wordpress-app/
               name: wordpress-app
       containers:
+        {{- if .Values.sidecars }}
+{{ toYaml .Values.sidecars | indent 8 }}
+        {{- end }}
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           {{- if .Values.postStart }}
