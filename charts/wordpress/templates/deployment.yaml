@@ -178,6 +178,8 @@ spec:
               readOnly: true
             - mountPath: /tmp/
               name: nginx-tmp
+            - mountPath: /var/cache/nginx/
+              name: nginx-cache
             {{- if .Values.dotenv.enabled }}
             - name: dotenv-file
               mountPath: /var/www/html/.env
@@ -195,6 +197,8 @@ spec:
         - name: nginx-tmp
           emptyDir:
             medium: Memory
+        - name: nginx-cache
+          emptyDir: {}
         {{- if .Values.dotenv.enabled }}
         - name: dotenv-file
           secret:
