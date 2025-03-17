@@ -37,7 +37,6 @@ data:
     max_input_time = 600
 
   nginx.conf: |-
-    proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=STATIC:10m inactive=7d use_temp_path=off;
     worker_processes            auto;
 
     error_log                   /dev/stderr;
@@ -50,6 +49,7 @@ data:
     }
 
     http {
+      proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=STATIC:10m inactive=7d use_temp_path=off;
       # cache informations about FDs, frequently accessed files
       # can boost performance, but you need to test those values
       open_file_cache           max=40000 inactive=20s;
