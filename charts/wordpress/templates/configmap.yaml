@@ -155,15 +155,18 @@ data:
               set $proxy_no_cache 1;
               set $requestmethod $request_method;
           }
+          if ($request_uri ~* "(/wp-admin/|/xmlrpc.php|/wp-(app|cron|login|register|mail).php|wp-.*.php|index.php|wp-comments-popup.php|wp-links-opml.php|wp-locations.php)") {
+            set $fastcgi_cache_disabled 1;
+          }
 
-          # if ($request_uri ~* "(/wp-admin/|/xmlrpc.php|/wp-(app|cron|login|register|mail).php|wp-.*.php|index.php|wp-comments-popup.php|wp-links-opml.php|wp-locations.php)") {
-          #    set $do_not_cache 1;
-          # }
-
-          # if ($http_cookie ~* "wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in") {
-          #   set $do_not_cache 1;
-          # }
-          # Serve static files, removing hashes in filenames for wp-includes and wp-admin
+          # Don't use the cache for logged in users
+          if ($http_cookie ~* "wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in") {
+            set $fastcgi_cache_disabled 1;
+          }
+          # POST requests should always go to PHP
+          if ($request_method = POST) {
+            set $fastcgi_cache_disabled 1;
+          }
           location ~* ^/wp/(wp-includes|wp-admin|wp-content)/.*\.(css|js)$ {
               root /var/www/html/web;
 
