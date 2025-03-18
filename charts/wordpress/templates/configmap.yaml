@@ -145,7 +145,24 @@ data:
           proxy_set_header Host $host;
           proxy_cache_bypass $http_upgrade;
 
+          set $wordpress_auth "";
+          set $proxy_cache_bypass 0;
+          set $proxy_no_cache 0;
+          set $requestmethod GET;
+          if ($http_cookie ~* "wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in") {
+              set $wordpress_auth wordpress_logged_in_$1;
+              set $proxy_cache_bypass 1;
+              set $proxy_no_cache 1;
+              set $requestmethod $request_method;
+          }
 
+          # if ($request_uri ~* "(/wp-admin/|/xmlrpc.php|/wp-(app|cron|login|register|mail).php|wp-.*.php|index.php|wp-comments-popup.php|wp-links-opml.php|wp-locations.php)") {
+          #    set $do_not_cache 1;
+          # }
+
+          # if ($http_cookie ~* "wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in") {
+          #   set $do_not_cache 1;
+          # }
           # Serve static files, removing hashes in filenames for wp-includes and wp-admin
           location ~* ^/wp/(wp-includes|wp-admin|wp-content)/.*\.(css|js)$ {
               root /var/www/html/web;
@@ -252,5 +269,6 @@ data:
               add_header Expires "Thu, 31 Dec 2037 23:55:55 GMT";
               add_header Cache-Control "max-age=315360000, public, immutable";
           }
+
       }
     }
