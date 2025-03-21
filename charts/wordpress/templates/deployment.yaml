@@ -116,9 +116,9 @@ spec:
             - mountPath: /usr/local/etc/php-fpm.d/zz-docker.conf
               name: wordpress-config
               subPath: php-fpm-zz-docker.conf
-            - mountPath: /usr/local/etc/php/conf.d/uploads.ini
+            - mountPath: /usr/local/etc/php/conf.d/zz-custom.ini
               name: wordpress-config
-              subPath: php-uploads.ini
+              subPath: zz-custom.ini
             - mountPath: /usr/local/etc/php/conf.d/opcache-recommended.ini
               name: wordpress-config
               subPath: php-opcache-recommended.ini
