@@ -105,19 +105,19 @@ data:
           image/svg+xml;
 
       # allow the server to close connection on non responding client, this will free up memory
-      reset_timedout_connection on;
+      reset_timedout_connection off;
 
       # request timed out -- default 60
-      client_body_timeout       20;
+      client_body_timeout       60;
 
       # if client stop responding, free up memory -- default 60
-      send_timeout              10;
+      send_timeout              60;
 
       # server will close connection after this time -- default 75
-      keepalive_timeout         30;
+      keepalive_timeout         75;
 
-      # number of requests client can make over keep-alive -- for testing environment
-      keepalive_requests        10000;
+      # number of requests client can make over keep-alive
+      keepalive_requests        1000;
 
       # other settings
       client_max_body_size      110M;
