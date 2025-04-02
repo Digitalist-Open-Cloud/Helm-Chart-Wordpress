@@ -14,6 +14,7 @@ data:
     daemonize = no
 
     [www]
+    pm.status_path = "/status"
     listen = 9000
     listen.allowed_clients = ::1,127.0.0.1,10.42.0.1
     pm.max_children = 75
