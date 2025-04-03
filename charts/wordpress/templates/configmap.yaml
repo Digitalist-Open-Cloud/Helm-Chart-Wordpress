@@ -14,15 +14,16 @@ data:
     daemonize = no
 
     [www]
-    pm.status_path = "/status"
     listen = 9000
     listen.allowed_clients = ::1,127.0.0.1,10.42.0.1
-    pm.max_children = 75
-    pm.process_idle_timeout = "10s"
+    pm.status_path = "/status"
+    pm = dynamic
+    pm.max_children = 50
+    pm.process_idle_timeout = "30s"
     pm.max_requests =  500
     pm.start_servers = 5
-    pm.min_spare_servers = 5
-    pm.max_spare_servers = 75
+    pm.min_spare_servers = 1
+    pm.max_spare_servers = 3
     php_admin_value[memory_limit] = "2048M"
 
   php-opcache-recommended.ini: |-
@@ -56,7 +57,7 @@ data:
     worker_rlimit_nofile        8192;
 
     events {
-      worker_connections        1024;
+      worker_connections        8000;
       multi_accept              on;
     }
 
@@ -67,10 +68,10 @@ data:
       proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=STATIC:10m inactive=7d use_temp_path=off;
       # cache informations about FDs, frequently accessed files
       # can boost performance, but you need to test those values
-      open_file_cache           max=40000 inactive=20s;
-      open_file_cache_valid     60s;
-      open_file_cache_min_uses  2;
-      open_file_cache_errors    on;
+      #open_file_cache           max=40000 inactive=20s;
+      #open_file_cache_valid     60s;
+      #open_file_cache_min_uses  2;
+      #open_file_cache_errors    on;
 
       # copies data between one FD and other from within the kernel
       # faster than read() + write()
