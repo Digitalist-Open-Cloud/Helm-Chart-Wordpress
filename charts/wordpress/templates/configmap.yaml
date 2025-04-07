@@ -157,6 +157,8 @@ data:
           root /var/www/html/web;
           index index.php;
 
+          large_client_header_buffers 4 16k;
+
           gzip on;
           gzip_proxied any;
           gzip_comp_level 4;
