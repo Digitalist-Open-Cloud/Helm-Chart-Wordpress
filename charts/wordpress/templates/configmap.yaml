@@ -216,6 +216,16 @@ data:
             access_log off;
             log_not_found off;
           }
+          location ~* /wp-cron.php$ {
+            deny all;
+            access_log off;
+            log_not_found off;
+          }
+          location ~* /wp-settings.php$ {
+            deny all;
+            access_log off;
+            log_not_found off;
+          }
           location ~* /app/.*.php$ {
             deny all;
             access_log off;
