@@ -197,7 +197,8 @@ data:
               # First try to locate the file as-is or fallback to removing the hash
               try_files $uri @strip_hash;
 
-              expires max;
+              add_header Expires "Thu, 31 Dec 2037 23:55:55 GMT";
+              add_header Cache-Control "max-age=315360000, public, immutable";
               log_not_found off;
               access_log off;
           }
@@ -252,7 +253,8 @@ data:
               # First try to locate the file as-is or fallback to removing the hash
               try_files $uri @strip_hash;
 
-              expires max;
+              add_header Expires "Thu, 31 Dec 2037 23:55:55 GMT";
+              add_header Cache-Control "max-age=315360000, public, immutable";
               log_not_found off;
               access_log off;
           }
@@ -290,7 +292,6 @@ data:
 
           # Cache long-lived assets
           location ~* \.(css|js|ico|gif|jpe?g|png|svg|webp|woff|woff2|ttf|eot|pdf)$ {
-              expires 120d;
               log_not_found off;
               access_log off;
               add_header Expires "Thu, 31 Dec 2037 23:55:55 GMT";
