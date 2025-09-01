@@ -55,5 +55,5 @@ jobs:
             echo "Version to push: $VERSION"
             cd charts
             helm package wordpress
-            helm registry login $HUB_HOST -u $HUB_REG_USER -p $HUB_REG_PASS
+            helm registry login $HUB_HOST -u $REG_USER -p $REG_PASS
             helm push wordpress-$VERSION.tgz oci://$HUB_HOST/charts
