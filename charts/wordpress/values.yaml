@@ -231,3 +231,4 @@ extraVolumeMounts: []
 dotenv:
   enabled: false
   name: wordpress
+component: ""

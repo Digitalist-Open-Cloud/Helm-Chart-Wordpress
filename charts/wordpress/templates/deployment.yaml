@@ -24,6 +24,8 @@ spec:
     {{- end }}
       labels:
         {{- include "wordpress.selectorLabels" . | nindent 8 }}
+        {{- include "wordpress.installationLabels" . | nindent 8 }}
+        {{- include "wordpress.componentLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:

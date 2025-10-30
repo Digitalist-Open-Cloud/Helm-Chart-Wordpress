@@ -43,6 +43,15 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
+
+{{- define "wordpress.installationLabels" -}}
+app.kubernetes.io/installation: {{ include "wordpress.fullname" . }}
+{{- end }}
+
+{{- define "wordpress.componentLabels" -}}
+app.kubernetes.io/component: {{ .Values.component | default "app" }}
+{{- end }}
+
 {{/*
 Selector labels
 */}}
