@@ -7,8 +7,6 @@ metadata:
   labels:
     {{- include "wordpress.labels" . | nindent 4 }}
 data:
-  env-wp-config-extra: |
-    {{ .Values.wordpress.config_extra | nindent 4 }}
   php-fpm-zz-docker.conf: |-
     [global]
     daemonize = no
