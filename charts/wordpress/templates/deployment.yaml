@@ -68,11 +68,6 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           env:
-            - name: WORDPRESS_CONFIG_EXTRA
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "wordpress.fullname" . }}-config
-                  key: env-wp-config-extra
             {{- range .Values.env }}
             {{- if .valueFromSecret }}
             - name: {{ .name }}
