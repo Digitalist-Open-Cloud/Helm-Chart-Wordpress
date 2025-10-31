@@ -126,6 +126,9 @@ spec:
               mountPath: /var/www/html/.env
               subPath: .env
             {{- end }}
+{{- if .Values.extraVolumeMounts }}
+{{ toYaml .Values.extraVolumeMounts | indent 12 }}
+{{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
         - name: nginx
@@ -204,6 +207,9 @@ spec:
           secret:
             secretName: {{ .Values.dotenv.name }}
         {{- end }}
+{{- if .Values.extraVolumes }}
+{{ toYaml .Values.extraVolumes | indent 8 }}
+{{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

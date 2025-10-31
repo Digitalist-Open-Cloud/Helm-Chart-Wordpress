@@ -214,8 +214,6 @@ extraConfigMap:
   # data:
   #   my.file: |
   #     foo: bar
-
-
 extraVolumes: []
 # extraVolumes:
 # - name: mySecretVolume
@@ -229,8 +227,8 @@ extraVolumes: []
 #       path: "/tmp/my.file"
 extraVolumeMounts: []
 # extraVolumeMounts:
-# - name: mySecretVolume
-#   mountPath: /foo/secrets/mySecretVolume/
+#   - name: mySecretVolume
+#     mountPath: /foo/secrets/mySecretVolume/
 # - name: my.file
 #   mountPath: /tmp/my.file
 #   subPath: my.file
