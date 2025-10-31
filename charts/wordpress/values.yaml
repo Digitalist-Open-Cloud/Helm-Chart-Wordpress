@@ -14,6 +14,8 @@ nginx:
   # want to strip /mysite/ from request, so you get /foo instead you add:
   # stripPrefixes:
   #   - mysite
+  # This is useful if you are using sub paths for you domain and targeting
+  # different wordpress pods.
   stripPrefixes: []
 
 env:
