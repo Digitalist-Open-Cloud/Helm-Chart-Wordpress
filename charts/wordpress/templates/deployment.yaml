@@ -10,7 +10,7 @@ spec:
   replicas: {{ .Values.replicaCount }}
 {{- end }}
   strategy:
-    type: Recreate
+    type: {{ .Values.rolloutStrategy }}
   selector:
     matchLabels:
       {{- include "wordpress.selectorLabels" . | nindent 6 }}

@@ -1,4 +1,5 @@
 replicaCount: 1
+rolloutStrategy: Recreate
 
 image:
   repository: wordpress
