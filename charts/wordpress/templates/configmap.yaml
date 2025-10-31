@@ -277,6 +277,15 @@ data:
               # Retry with a stripped hash or return 404 if the rewritten file could not be found
               try_files $uri =404;
           }
+{{- range .Values.nginx.stripPrefixes }}
+          ## prefix found
+          location = /{{ . }} {
+            rewrite ^ / last;
+          }
+          location ^~ /{{ . }}/ {
+            rewrite ^/{{ . }}/(.*)$ /$1 last;
+          }
+{{- end }}
 
           # General WordPress routing: Core rewrite rules
           location / {

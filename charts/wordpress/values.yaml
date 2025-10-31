@@ -10,6 +10,11 @@ nginx:
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: 1.21.6
+  # Prefixes to strip from request, if request is /mysite/foo and you
+  # want to strip /mysite/ from request, so you get /foo instead you add:
+  # stripPrefixes:
+  #   - mysite
+  stripPrefixes: []
 
 env:
   - name: DB_HOST
