@@ -52,9 +52,49 @@ spec:
             - mountPath: /wordpress-app/
               name: wordpress-app
       containers:
-        {{- if .Values.sidecars }}
-{{ toYaml .Values.sidecars | indent 8 }}
-        {{- end }}
+{{- range .Values.sidecars }}
+        - name: {{ .name }}
+          image: {{ .image }}
+          imagePullPolicy: {{ .imagePullPolicy | default "IfNotPresent" }}
+          env:
+          {{- range .env }}
+            - name: {{ .name }}
+          {{- if .value }}
+              value: {{ .value | quote }}
+          {{- end }}
+          {{- if .valueFrom }}
+              valueFrom: {{ toYaml .valueFrom | nindent 16 }}
+          {{- end }}
+          {{- end }}
+          volumeMounts:
+          {{- range .volumeMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath | quote }}
+          {{- if .subPath }}
+              subPath: {{ .subPath }}
+          {{- end }}
+          {{- end }}
+          {{- if .securityContext }}
+          securityContext:
+            {{- toYaml .securityContext | nindent 12 }}
+          {{- end }}
+          {{- if .livenessProbe }}
+          livenessProbe:
+            {{- toYaml .livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .readinessProbe }}
+          readinessProbe:
+            {{- toYaml .readinessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .ports }}
+          ports:
+            {{- toYaml .ports | nindent 12 }}
+          {{- end }}
+          {{- if .resources }}
+          resources:
+            {{ toYaml .resources | nindent 12 }}
+          {{- end }}
+{{- end }}
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           {{- if .Values.postStart }}
@@ -63,7 +103,6 @@ spec:
               exec:
                 command: ["/bin/sh", "-c", "{{ .Values.postStart }}"]
           {{- end }}
-
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
