@@ -32,6 +32,12 @@ env:
       key: password
   - name: DB_PREFIX
     value: wp_
+## These will be added to Wordpress and all sidecars, including cavalcade if you
+## enable it
+# sharedEnv: []
+sharedEnv:
+  - name: FOO_BAR
+    value: db_wordpress
 ## As:
 ## imagePullSecrets:
 ##   - name: myRegistryKeySecretName
@@ -213,3 +219,9 @@ customConfig:
   php_opcache: ""
   php: ""
   nginx_conf: ""
+
+# @todo: cavalcade added by value.
+# cavalcade:
+#   enabled: false
+#   image: "digitalist/cavalcade-docker:0.2"
+#   env: []

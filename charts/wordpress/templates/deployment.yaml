@@ -66,6 +66,18 @@ spec:
               valueFrom: {{ toYaml .valueFrom | nindent 16 }}
           {{- end }}
           {{- end }}
+          {{- range .Values.sharedEnv }}
+          {{- if .valueFromSecret }}
+          - name: {{ .name }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ .valueFromSecret.secretName | quote }}
+                key: {{ .valueFromSecret.key | quote }}
+          {{- else if .value }}
+          - name: {{ .name }}
+            value: {{ .value | quote }}
+          {{- end }}
+          {{- end }}
           volumeMounts:
           {{- range .volumeMounts }}
             - name: {{ .name }}
@@ -108,6 +120,18 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           env:
             {{- range .Values.env }}
+            {{- if .valueFromSecret }}
+            - name: {{ .name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .valueFromSecret.secretName | quote }}
+                  key: {{ .valueFromSecret.key | quote }}
+            {{- else if .value }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+            {{- end }}
+            {{- range .Values.sharedEnv }}
             {{- if .valueFromSecret }}
             - name: {{ .name }}
               valueFrom:
