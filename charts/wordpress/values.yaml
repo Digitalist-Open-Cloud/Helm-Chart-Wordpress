@@ -35,9 +35,7 @@ env:
 ## These will be added to Wordpress and all sidecars, including cavalcade if you
 ## enable it
 # sharedEnv: []
-sharedEnv:
-  - name: FOO_BAR
-    value: db_wordpress
+sharedEnv: []
 ## As:
 ## imagePullSecrets:
 ##   - name: myRegistryKeySecretName
