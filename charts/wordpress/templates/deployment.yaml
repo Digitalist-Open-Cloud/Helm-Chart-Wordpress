@@ -66,6 +66,7 @@ spec:
               valueFrom: {{ toYaml .valueFrom | nindent 16 }}
           {{- end }}
           {{- end }}
+{{- with .Values.sharedEnv }}
           {{- range .Values.sharedEnv }}
           {{- if .valueFromSecret }}
           - name: {{ .name }}
@@ -78,6 +79,7 @@ spec:
             value: {{ .value | quote }}
           {{- end }}
           {{- end }}
+{{- end }}
           volumeMounts:
           {{- range .volumeMounts }}
             - name: {{ .name }}
@@ -131,6 +133,7 @@ spec:
               value: {{ .value | quote }}
             {{- end }}
             {{- end }}
+{{- with .Values.sharedEnv }}
             {{- range .Values.sharedEnv }}
             {{- if .valueFromSecret }}
             - name: {{ .name }}
@@ -143,6 +146,7 @@ spec:
               value: {{ .value | quote }}
             {{- end }}
             {{- end }}
+{{- end }}
           {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}

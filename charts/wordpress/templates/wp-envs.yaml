@@ -1,0 +1,12 @@
+{{- range $env, $val := .Values.wordpressEnvs }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "wordpress.fullname" $ }}-env-{{ $env }}
+  labels:
+    {{- include "wordpress.labels" $ | nindent 4 }}
+data:
+  {{ $env }}.php: |-
+{{ $val | nindent 4 }}
+{{- end }}
