@@ -67,7 +67,7 @@ spec:
           {{- end }}
           {{- end }}
 {{- with .Values.sharedEnv }}
-          {{- range .Values.sharedEnv }}
+          {{- range .Values.sharedEnv | default list }}
           {{- if .valueFromSecret }}
           - name: {{ .name }}
             valueFrom:
@@ -134,7 +134,7 @@ spec:
             {{- end }}
             {{- end }}
 {{- with .Values.sharedEnv }}
-            {{- range .Values.sharedEnv }}
+            {{- range .Values.sharedEnv | default list }}
             {{- if .valueFromSecret }}
             - name: {{ .name }}
               valueFrom:
