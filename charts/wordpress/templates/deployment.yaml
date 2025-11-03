@@ -158,8 +158,6 @@ spec:
             - mountPath: /usr/local/etc/php/conf.d/opcache-recommended.ini
               name: wordpress-config
               subPath: php-opcache-recommended.ini
-            - mountPath: /run/secrets/wordpress/
-              name: wordpress-config
             {{- if .Values.dotenv.enabled }}
             - name: dotenv-file
               mountPath: /var/www/html/.env
@@ -192,24 +190,12 @@ spec:
               value: {{ .value | quote }}
             {{- end }}
             {{- end }}
-          {{- if .Values.cavalcade.volumeMounts }}
           volumeMounts:
             - mountPath: /var/www/html
               name: wordpress-app
             - mountPath: /var/www/html/web/app/uploads/
               name: wordpress-data
               subPath: uploads
-            - mountPath: /usr/local/etc/php-fpm.d/zz-docker.conf
-              name: wordpress-config
-              subPath: php-fpm-zz-docker.conf
-            - mountPath: /usr/local/etc/php/conf.d/zz-custom.ini
-              name: wordpress-config
-              subPath: zz-custom.ini
-            - mountPath: /usr/local/etc/php/conf.d/opcache-recommended.ini
-              name: wordpress-config
-              subPath: php-opcache-recommended.ini
-            - mountPath: /run/secrets/wordpress/
-              name: wordpress-config
             {{- if .Values.dotenv.enabled }}
             - name: dotenv-file
               mountPath: /var/www/html/.env
@@ -227,7 +213,6 @@ spec:
                 subPath: {{ .subPath }}
               {{- end }}
             {{- end }}
-          {{- end }}
           resources:
             {{- toYaml .Values.cavalcade.resources | nindent 12 }}
         {{- end }}
