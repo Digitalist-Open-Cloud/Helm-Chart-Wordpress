@@ -6,9 +6,13 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "wordpress.labels" . | nindent 4 }}
-  {{- if .Values.commonAnnotations }}
-  annotations: {{- include "wordpress.tplValue" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
-  {{- end }}
+    {{- with .Values.wordpress.persistence.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- with .Values.wordpress.persistence.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   accessModes:
     - {{ .Values.wordpress.persistence.accessMode | quote }}

@@ -11,6 +11,13 @@ nginx:
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: 1.21.6
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 10m
+      memory: 20Mi
   # Prefixes to strip from request, if request is /mysite/foo and you
   # want to strip /mysite/ from request, so you get /foo instead you add:
   # stripPrefixes:
@@ -93,17 +100,13 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 25m
+    memory: 64Mi
 
 autoscaling:
   enabled: false
@@ -162,6 +165,8 @@ wordpress:
     # existingClaim: your-claim
     accessMode: ReadWriteOnce
     size: 10Gi
+    annotations: {}
+    labels: {}
 ## Add sidecars you want to use.
 sidecars:
   []
@@ -220,14 +225,24 @@ customConfig:
   php: ""
   nginx_conf: ""
 
-# @todo: cavalcade added by value.
-# cavalcade:
-#   enabled: false
-#   image: "digitalist/cavalcade-docker:0.2"
-#   env: []
+# Add Cavalcade as sidecar, needs the cavalcade plugin in Wordpress.
+cavalcade:
+  enabled: false
+  image: "digitalist/cavalcade-docker:0.2"
+  # env array is added from Wordpress first, if adding env here, it adds after
+  # wordpress envs.
+  env: []
+  imagePullPolicy: Always
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
 
 # Dynamic create, or override a whole WordPress environment, like 'staging', 'development' etc.
-# This mounts into '/var/www/html/config/environments/staging.php'
+# This mounts into '/var/www/html/config/environments/staging.php' if you name it staging.
 # wordpressEnvs:
 #   staging: |
 #     <?php define('WP_ENV', 'staging');
