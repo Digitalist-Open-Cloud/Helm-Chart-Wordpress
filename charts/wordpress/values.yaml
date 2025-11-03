@@ -34,8 +34,10 @@ env:
     value: wp_
 ## These will be added to Wordpress and all sidecars, including cavalcade if you
 ## enable it
-# sharedEnv: []
-sharedEnv: []
+# sharedEnv:
+#   - name: FOO
+#     value: bar
+sharedEnv: {}
 ## As:
 ## imagePullSecrets:
 ##   - name: myRegistryKeySecretName
@@ -223,3 +225,11 @@ customConfig:
 #   enabled: false
 #   image: "digitalist/cavalcade-docker:0.2"
 #   env: []
+
+# Dynamic create, or override a whole WordPress environment, like 'staging', 'development' etc.
+# This mounts into '/var/www/html/config/environments/staging.php'
+# wordpressEnvs:
+#   staging: |
+#     <?php define('WP_ENV', 'staging');
+#     define('WP_DEBUG', true);
+wordpressEnvs: {}

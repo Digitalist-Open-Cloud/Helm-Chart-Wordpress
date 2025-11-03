@@ -189,6 +189,11 @@ spec:
               mountPath: /var/www/html/.env
               subPath: .env
             {{- end }}
+{{- range $env, $val := .Values.wordpressEnvs }}
+            - name: env-{{ $env }}
+              mountPath: /var/www/html/config/environments/{{ $env }}.php
+              subPath: {{ $env }}.php
+{{- end }}
 {{- if .Values.extraVolumeMounts }}
 {{ toYaml .Values.extraVolumeMounts | indent 12 }}
 {{- end }}
@@ -270,6 +275,11 @@ spec:
           secret:
             secretName: {{ .Values.dotenv.name }}
         {{- end }}
+{{- range $env, $val := .Values.wordpressEnvs }}
+        - name: env-{{ $env }}
+          configMap:
+            name: {{ include "wordpress.fullname" $ }}-env-{{ $env }}
+{{- end }}
 {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | indent 8 }}
 {{- end }}
