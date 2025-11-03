@@ -13,8 +13,7 @@ A Helm chart to deploy WordPress in Kubernetes
 | autoscaling.maxReplicas | int | `100` |  |
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
-| cavalcade.enabled | bool | `false` |  |
-| cavalcade.env | list | `[]` |  |
+| cavalcade.enabled | bool | `true` |  |
 | cavalcade.image | string | `"digitalist/cavalcade-docker:0.2"` |  |
 | cavalcade.imagePullPolicy | string | `"Always"` |  |
 | cavalcade.resources.limits.cpu | string | `"200m"` |  |
@@ -98,7 +97,6 @@ A Helm chart to deploy WordPress in Kubernetes
 | serviceAccount.annotations | object | `{}` |  |
 | serviceAccount.create | bool | `true` |  |
 | serviceAccount.name | string | `""` |  |
-| sharedEnv | list | `[]` |  |
 | sidecars | list | `[]` |  |
 | tolerations | list | `[]` |  |
 | wordpress.persistence.accessMode | string | `"ReadWriteOnce"` |  |
