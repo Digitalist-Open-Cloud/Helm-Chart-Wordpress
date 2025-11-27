@@ -26,7 +26,6 @@ spec:
             - -c
             - |
               set -e
-              apk add --no-cache curl mariadb-client
               curl -sSL {{ .Values.minioClientDownload }} -o /tmp/mc
               chmod +x /tmp/mc
               /tmp/mc alias set s3 $S3_URL $S3_ACCESS_KEY $S3_SECRET_KEY
