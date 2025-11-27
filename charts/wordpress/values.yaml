@@ -221,7 +221,7 @@ customConfig:
 
 # Add Cavalcade as sidecar, needs the cavalcade plugin in Wordpress.
 cavalcade:
-  enabled: true
+  enabled: false
   image: "digitalist/cavalcade-docker:0.2"
   imagePullPolicy: Always
   resources:
@@ -230,7 +230,7 @@ cavalcade:
       memory: 64Mi
     limits:
       cpu: 200m
-      memory: 256Mi
+      memory: 512Mi
 
 # Dynamic create, or override a whole WordPress environment, like 'staging', 'development' etc.
 # This mounts into '/var/www/html/config/environments/staging.php' if you name it staging.
@@ -239,3 +239,21 @@ cavalcade:
 #     <?php define('WP_ENV', 'staging');
 #     define('WP_DEBUG', true);
 wordpressEnvs: {}
+
+# Import files from a backup.
+#
+fileImport:
+  enabled: false
+  bucket: "wordpress-files"
+  path: "uploads/"
+
+# Import db from a backup.
+#
+dbImport:
+  enabled: false
+  bucket: "wordpress-backups/foo/is/bar" #no slash in end
+  path: "uploads/"
+  file: "db.sql"
+
+minioClientDownload: https://dl.min.io/aistor/mc/release/linux-amd64/mc
+helperImage: alpine:3.22

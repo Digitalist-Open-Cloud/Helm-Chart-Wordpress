@@ -4,6 +4,21 @@
 
 A Helm chart to deploy WordPress in Kubernetes
 
+## To install from backups
+
+Create secret for s3 storage:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: s3-storage
+stringData:
+  S3_URL: "https://s3storage.domain"
+  S3_ACCESS_KEY: "your-access"
+  S3_SECRET_KEY: "your-secret"
+```
+
 ## Values
 
 | Key | Type | Default | Description |

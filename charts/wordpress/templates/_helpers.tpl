@@ -60,6 +60,20 @@ app.kubernetes.io/name: {{ include "wordpress.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
+{{- define "wordpress.envValue" -}}
+{{- $envList := index . 0 -}}
+{{- $key := index . 1 -}}
+{{- range $env := $envList }}
+  {{- if eq $env.name $key }}
+    {{- if $env.value }}
+      {{- $env.value }}
+    {{- else if $env.valueFromSecret }}
+      {{- printf "__SECRET__:%s:%s" $env.valueFromSecret.secretName $env.valueFromSecret.key }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
 {{/*
 Create the name of the service account to use
 */}}

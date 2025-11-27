@@ -1,0 +1,59 @@
+{{- if .Values.fileImport.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "wordpress.fullname" . }}-files-import
+  labels:
+    {{- include "wordpress.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-4"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: Never
+      containers:
+        - name: files-import
+          image: {{ .Values.helperImage }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              apk add --no-cache curl
+              curl -sSL {{ .Values.minioClientDownload }} -o /usr/local/bin/mc
+              chmod +x /usr/local/bin/mc
+              mc alias set s3 $S3_URL $S3_ACCESS_KEY $S3_SECRET_KEY
+              echo "Syncing files for WordPress..."
+              mc mirror \
+                "s3/{{ .Values.fileImport.bucket }}/{{ .Values.fileImport.path }}" \
+                /uploads
+          env:
+            - name: S3_URL
+              valueFrom:
+                secretKeyRef:
+                  name: s3-storage
+                  key: S3_URL
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: s3-storage
+                  key: S3_ACCESS_KEY
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: s3-storage
+                  key: S3_SECRET_KEY
+          volumeMounts:
+            - name: data
+              mountPath: /uploads
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "wordpress.fullname" . }}-data
+{{- end }}

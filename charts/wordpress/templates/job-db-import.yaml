@@ -1,0 +1,76 @@
+{{- if .Values.dbImport.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "wordpress.fullname" . }}-db-import
+  labels:
+    {{- include "wordpress.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: Never
+      containers:
+        - name: db-import
+          image: {{ .Values.helperImage }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              apk add --no-cache curl mariadb-client
+              curl -sSL {{ .Values.minioClientDownload }} -o /usr/local/bin/mc
+              chmod +x /usr/local/bin/mc
+              mc alias set s3 $S3_URL $S3_ACCESS_KEY $S3_SECRET_KEY
+              echo "Downloading database dump..."
+              mc cp s3/{{ .Values.dbImport.bucket }}/{{ .Values.dbImport.file }} /tmp/dump.sql
+              echo "Importing into database..."
+              mariadb \
+                -h $DB_HOST \
+                -u $DB_USER \
+                -p"$DB_PASSWORD" \
+                "$DB_NAME" < /tmp/dump.sql
+          env:
+            - name: DB_HOST
+              value: {{ include "wordpress.envValue" (list .Values.env "DB_HOST") | quote }}
+            - name: DB_NAME
+              value: {{ include "wordpress.envValue" (list .Values.env "DB_NAME") | quote }}
+            - name: DB_USER
+              value: {{ include "wordpress.envValue" (list .Values.env "DB_USER") | quote }}
+            - name: DB_PREFIX
+              value: {{ include "wordpress.envValue" (list .Values.env "DB_PREFIX") | quote }}
+            {{- $dbPassword := include "wordpress.envValue" (list .Values.env "DB_PASSWORD") }}
+            {{- $isSecret := (hasPrefix "__SECRET__:" $dbPassword) }}
+            {{- if $isSecret }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ index (splitList ":" $dbPassword) 1 }}
+                  key: {{ index (splitList ":" $dbPassword) 2 }}
+            {{- else }}
+            - name: DB_PASSWORD
+              value: {{ $dbPassword | quote }}
+            {{- end }}
+            - name: S3_URL
+              valueFrom:
+                secretKeyRef:
+                  name: s3-storage
+                  key: S3_URL
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: s3-storage
+                  key: S3_ACCESS_KEY
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: s3-storage
+                  key: S3_SECRET_KEY
+{{- end }}
