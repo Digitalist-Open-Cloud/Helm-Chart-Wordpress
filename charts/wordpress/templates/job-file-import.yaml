@@ -29,14 +29,13 @@ spec:
             - -c
             - |
               set -e
-              apk add --no-cache curl
-              curl -sSL {{ .Values.minioClientDownload }} -o /usr/local/bin/mc
-              chmod +x /usr/local/bin/mc
-              mc alias set s3 $S3_URL $S3_ACCESS_KEY $S3_SECRET_KEY
+              curl -sSL {{ .Values.minioClientDownload }} -o /tmp/mc
+              chmod +x /tmp/mc
+              /tmp/mc alias set s3 $S3_URL $S3_ACCESS_KEY $S3_SECRET_KEY
               echo "Syncing files for WordPress..."
-              mc ls s3
-              mc ls s3/{{ .Values.fileImport.bucket }}
-              mc mirror s3/{{ .Values.fileImport.bucket }} /var/www/html/web/app/uploads/
+              /tmp/mc ls s3
+              /tmp/mc ls s3/{{ .Values.fileImport.bucket }}
+              /tmp/mc mirror s3/{{ .Values.fileImport.bucket }} /var/www/html/web/app/uploads/
           env:
             - name: S3_URL
               valueFrom:
