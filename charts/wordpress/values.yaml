@@ -245,7 +245,7 @@ wordpressEnvs: {}
 fileImport:
   enabled: false
   bucket: wordpress-files
-  path: /var/www/html/web/app/mirror
+  path: /var/www/html/web/app/mirror/uploads
 
 # Import db from a backup.
 #
