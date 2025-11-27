@@ -244,14 +244,15 @@ wordpressEnvs: {}
 #
 fileImport:
   enabled: false
-  bucket: "wordpress-files"
+  bucket: wordpress-files
+  path: /var/www/html/web/app/mirror
 
 # Import db from a backup.
 #
 dbImport:
   enabled: false
   bucket: "wordpress-backups/foo/is/bar" #no slash in end
-  path: "uploads/"
+  path: "uploads"
   file: "db.sql"
 
 minioClientDownload: https://dl.min.io/aistor/mc/release/linux-amd64/mc

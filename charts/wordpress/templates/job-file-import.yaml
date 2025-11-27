@@ -35,7 +35,7 @@ spec:
               echo "Syncing files for WordPress..."
               /tmp/mc ls s3
               /tmp/mc ls s3/{{ .Values.fileImport.bucket }}
-              /tmp/mc cp --recursive s3/{{ .Values.fileImport.bucket }} /var/www/html/web/app/uploads
+              /tmp/mc cp --recursive s3/{{ .Values.fileImport.bucket }} {{ .Values.fileImport.path }}
           env:
             - name: S3_URL
               valueFrom:
@@ -54,7 +54,7 @@ spec:
                   key: S3_SECRET_KEY
           volumeMounts:
             - name: data
-              mountPath: /var/www/html/web/app/uploads
+              mountPath: /var/www/html/web/app/mirror
       volumes:
         - name: data
           persistentVolumeClaim:
