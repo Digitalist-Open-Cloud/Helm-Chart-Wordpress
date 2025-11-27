@@ -30,6 +30,8 @@ spec:
               chmod +x /usr/local/bin/mc
               mc alias set s3 $S3_URL $S3_ACCESS_KEY $S3_SECRET_KEY
               echo "Syncing files for WordPress..."
+              mc ls s3
+              mc ls s3/{{ .Values.fileImport.bucket }}
               mc mirror \
                 "s3/{{ .Values.fileImport.bucket }}/{{ .Values.fileImport.path }}" \
                 /uploads
