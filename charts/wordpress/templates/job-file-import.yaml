@@ -35,7 +35,7 @@ spec:
               echo "Syncing files for WordPress..."
               /tmp/mc ls s3
               /tmp/mc ls s3/{{ .Values.fileImport.bucket }}
-              /tmp/mc mirror s3/{{ .Values.fileImport.bucket }} /var/www/html/web/app/uploads/
+              /tmp/cp --recursive s3/{{ .Values.fileImport.bucket }} /var/www/html/web/app/uploads
           env:
             - name: S3_URL
               valueFrom:
