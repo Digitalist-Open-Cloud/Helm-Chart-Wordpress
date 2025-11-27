@@ -245,7 +245,6 @@ wordpressEnvs: {}
 fileImport:
   enabled: false
   bucket: "wordpress-files"
-  path: "uploads/"
 
 # Import db from a backup.
 #

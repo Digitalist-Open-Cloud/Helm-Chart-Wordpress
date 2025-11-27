@@ -33,7 +33,7 @@ spec:
               mc ls s3
               mc ls s3/{{ .Values.fileImport.bucket }}
               mc mirror \
-                "s3/{{ .Values.fileImport.bucket }}/{{ .Values.fileImport.path }}" \
+                "s3/{{ .Values.fileImport.bucket }}" \
                 /uploads
           env:
             - name: S3_URL
