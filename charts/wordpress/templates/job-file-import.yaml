@@ -19,9 +19,13 @@ spec:
       restartPolicy: Never
       containers:
         - name: files-import
-          image: {{ .Values.helperImage }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: true
+            privileged: true
           command:
-            - /bin/sh
+            - /bin/bash
             - -c
             - |
               set -e
@@ -32,9 +36,7 @@ spec:
               echo "Syncing files for WordPress..."
               mc ls s3
               mc ls s3/{{ .Values.fileImport.bucket }}
-              mc mirror \
-                "s3/{{ .Values.fileImport.bucket }}" \
-                /uploads
+              mc mirror s3/{{ .Values.fileImport.bucket }} /var/www/html/web/app/uploads/
           env:
             - name: S3_URL
               valueFrom:
@@ -53,7 +55,7 @@ spec:
                   key: S3_SECRET_KEY
           volumeMounts:
             - name: data
-              mountPath: /uploads
+              mountPath: /var/www/html/web/app/uploads
       volumes:
         - name: data
           persistentVolumeClaim:
