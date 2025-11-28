@@ -31,6 +31,7 @@ spec:
               /tmp/mc alias set s3 $S3_URL $S3_ACCESS_KEY $S3_SECRET_KEY
               echo "Downloading database dump..."
               /tmp/mc cp s3/{{ .Values.dbImport.bucket }}/{{ .Values.dbImport.file }} /tmp/dump.sql
+              sed -i "s/\bwp_/${DB_PREFIX}/g" /tmp/dump.sql
               echo "Importing into database..."
               mariadb \
                 -h $DB_HOST \
