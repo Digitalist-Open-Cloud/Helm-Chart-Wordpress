@@ -213,6 +213,9 @@ spec:
                 subPath: {{ .subPath }}
               {{- end }}
             {{- end }}
+{{- if .Values.extraVolumeMounts }}
+{{ toYaml .Values.extraVolumeMounts | indent 12 }}
+{{- end }}
           resources:
             {{- toYaml .Values.cavalcade.resources | nindent 12 }}
         {{- end }}
@@ -275,6 +278,9 @@ spec:
               mountPath: /var/www/html/.env
               subPath: .env
             {{- end }}
+{{- if .Values.extraVolumeMounts }}
+{{ toYaml .Values.extraVolumeMounts | indent 12 }}
+{{- end }}
       volumes:
         - name: wordpress-app
           emptyDir: {}
