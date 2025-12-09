@@ -155,6 +155,7 @@ data:
           listen 8080 default_server;
 
           server_name _;
+          port_in_redirect off;
           root /var/www/html/web;
           index index.php;
 
