@@ -205,6 +205,10 @@ dotenv:
   name: wordpress
 component: ""
 
+externalConfigMap:
+  enabled: false
+  name: ""
+
 # Override blocks in configmap. This will override the whole entry.
 # customConfig:
 #   php_fpm: |

@@ -1,4 +1,4 @@
----
+{{- if not (and .Values.externalConfigMap.enabled .Values.externalConfigMap.name) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -321,4 +321,5 @@ data:
 
       }
     }
+{{- end }}
 {{- end }}

@@ -1,23 +1,8 @@
 # wordpress
 
-![Version: 0.2.46](https://img.shields.io/badge/Version-0.2.46-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
+![Version: 0.2.49](https://img.shields.io/badge/Version-0.2.49-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
 
 A Helm chart to deploy WordPress in Kubernetes
-
-## To install from backups
-
-Create secret for s3 storage:
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: s3-storage
-stringData:
-  S3_URL: "https://s3storage.domain"
-  S3_ACCESS_KEY: "your-access"
-  S3_SECRET_KEY: "your-secret"
-```
 
 ## Values
 
@@ -28,11 +13,11 @@ stringData:
 | autoscaling.maxReplicas | int | `100` |  |
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
-| cavalcade.enabled | bool | `true` |  |
+| cavalcade.enabled | bool | `false` |  |
 | cavalcade.image | string | `"digitalist/cavalcade-docker:0.2"` |  |
 | cavalcade.imagePullPolicy | string | `"Always"` |  |
 | cavalcade.resources.limits.cpu | string | `"200m"` |  |
-| cavalcade.resources.limits.memory | string | `"256Mi"` |  |
+| cavalcade.resources.limits.memory | string | `"512Mi"` |  |
 | cavalcade.resources.requests.cpu | string | `"25m"` |  |
 | cavalcade.resources.requests.memory | string | `"64Mi"` |  |
 | component | string | `""` |  |
@@ -40,6 +25,10 @@ stringData:
 | customConfig.php | string | `""` |  |
 | customConfig.php_fpm | string | `""` |  |
 | customConfig.php_opcache | string | `""` |  |
+| dbImport.bucket | string | `"wordpress-backups/foo/is/bar"` |  |
+| dbImport.enabled | bool | `false` |  |
+| dbImport.file | string | `"db.sql"` |  |
+| dbImport.path | string | `"uploads"` |  |
 | dotenv.enabled | bool | `false` |  |
 | dotenv.name | string | `"wordpress"` |  |
 | env[0].name | string | `"DB_HOST"` |  |
@@ -53,13 +42,19 @@ stringData:
 | env[3].valueFromSecret.secretName | string | `"mariadb"` |  |
 | env[4].name | string | `"DB_PREFIX"` |  |
 | env[4].value | string | `"wp_"` |  |
+| externalConfigMap.enabled | bool | `false` |  |
+| externalConfigMap.name | string | `""` |  |
 | extraConfigMap.create | bool | `false` |  |
 | extraConfigMap.data | object | `{}` |  |
 | extraSecrets.create | bool | `false` |  |
 | extraSecrets.data | object | `{}` |  |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
+| fileImport.bucket | string | `"wordpress-files"` |  |
+| fileImport.enabled | bool | `false` |  |
+| fileImport.path | string | `"/var/www/html/web/app/mirror/uploads"` |  |
 | fullnameOverride | string | `""` |  |
+| helperImage | string | `"alpine:3.22"` |  |
 | image.pullPolicy | string | `"Always"` |  |
 | image.repository | string | `"wordpress"` |  |
 | image.tag | string | `"5.7-php7.4-fpm-alpine"` |  |
@@ -77,6 +72,7 @@ stringData:
 | livenessProbe.periodSeconds | int | `20` |  |
 | livenessProbe.successThreshold | int | `1` |  |
 | livenessProbe.timeoutSeconds | int | `5` |  |
+| minioClientDownload | string | `"https://dl.min.io/aistor/mc/release/linux-amd64/mc"` |  |
 | nameOverride | string | `""` |  |
 | nginx.pullPolicy | string | `"Always"` |  |
 | nginx.repository | string | `"digitalist/nginx"` |  |

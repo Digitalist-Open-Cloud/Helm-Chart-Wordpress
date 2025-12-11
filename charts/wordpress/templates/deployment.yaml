@@ -285,8 +285,13 @@ spec:
         - name: wordpress-app
           emptyDir: {}
         - name: wordpress-config
+{{- if and .Values.externalConfigMap.enabled .Values.externalConfigMap.name }}
+          configMap:
+            name: {{ .Values.externalConfigMap.name }}
+{{- else }}
           configMap:
             name: {{ include "wordpress.fullname" . }}-config
+{{- end }}
         - name: wordpress-data
           persistentVolumeClaim:
             claimName: {{ include "wordpress.fullname" . }}-data
