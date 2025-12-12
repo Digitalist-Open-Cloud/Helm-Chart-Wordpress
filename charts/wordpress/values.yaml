@@ -267,4 +267,4 @@ dbBackup:
   schedule: "0 2 * * *"   # daily at 02:00
   bucket: wordpress-backups
   retentionDays: 14       # optional
-  filenamePrefix: wp-db
+  filenamePrefixOverride: ""

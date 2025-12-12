@@ -1,6 +1,6 @@
 # wordpress
 
-![Version: 0.2.53](https://img.shields.io/badge/Version-0.2.53-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
+![Version: 0.2.54](https://img.shields.io/badge/Version-0.2.54-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
 
 A Helm chart to deploy WordPress in Kubernetes
 
@@ -27,7 +27,7 @@ A Helm chart to deploy WordPress in Kubernetes
 | customConfig.php_opcache | string | `""` |  |
 | dbBackup.bucket | string | `"wordpress-backups"` |  |
 | dbBackup.enabled | bool | `false` |  |
-| dbBackup.filenamePrefix | string | `"wp-db"` |  |
+| dbBackup.filenamePrefixOverride | string | `""` |  |
 | dbBackup.retentionDays | int | `14` |  |
 | dbBackup.schedule | string | `"0 2 * * *"` |  |
 | dbImport.bucket | string | `"wordpress-backups/foo/is/bar"` |  |

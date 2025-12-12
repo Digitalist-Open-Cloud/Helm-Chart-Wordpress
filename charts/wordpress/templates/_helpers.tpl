@@ -84,3 +84,22 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+
+{{/*
+Resolve DB backup filename prefix
+
+Precedence:
+1. dbBackup.filenamePrefixOverride
+2. wordpress.fullnameOverride
+3. wordpress.fullname (generated)
+*/}}
+{{- define "wordpress.dbBackupFilenamePrefix" -}}
+{{- if .Values.dbBackup.filenamePrefixOverride -}}
+{{- .Values.dbBackup.filenamePrefixOverride -}}
+{{- else if .Values.wordpress.fullnameOverride -}}
+{{- .Values.wordpress.fullnameOverride -}}
+{{- else -}}
+{{- include "wordpress.fullname" . -}}
+{{- end -}}
+{{- end -}}
