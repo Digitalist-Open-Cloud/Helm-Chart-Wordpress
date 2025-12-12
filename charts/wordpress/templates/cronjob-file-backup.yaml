@@ -1,0 +1,88 @@
+{{- if .Values.fileBackup.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "wordpress.fullname" . }}-files-backup
+  labels:
+    {{- include "wordpress.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.fileBackup.schedule | quote }}
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: files-backup
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              securityContext:
+                allowPrivilegeEscalation: true
+                privileged: true
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -euo pipefail
+
+                  SITE="{{ include "wordpress.filesBackupPrefix" . }}"
+                  TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+
+                  SRC="{{ .Values.fileBackup.path }}"
+                  DEST="s3/{{ .Values.fileBackup.bucket }}/files/${SITE}/${TIMESTAMP}"
+
+                  echo "Downloading MinIO client..."
+                  curl -sSL {{ .Values.minioClientDownload }} -o /tmp/mc
+                  chmod +x /tmp/mc
+
+                  echo "Configuring S3 alias..."
+                  /tmp/mc alias set s3 "$S3_URL" "$S3_ACCESS_KEY" "$S3_SECRET_KEY"
+
+                  echo "Starting file backup..."
+                  echo "Source: $SRC"
+                  echo "Destination: $DEST"
+
+                  /tmp/mc mirror \
+                    --overwrite \
+                    "$SRC" \
+                    "$DEST"
+
+                  {{- if .Values.fileBackup.retentionDays }}
+                  echo "Applying retention policy..."
+                  /tmp/mc rm --recursive --force \
+                    --older-than {{ .Values.fileBackup.retentionDays }}d \
+                    "s3/{{ .Values.fileBackup.bucket }}/files/${SITE}"
+                  {{- end }}
+
+                  echo "File backup completed successfully"
+              env:
+                - name: S3_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: s3-storage
+                      key: S3_URL
+                - name: S3_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: s3-storage
+                      key: S3_ACCESS_KEY
+                - name: S3_SECRET_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: s3-storage
+                      key: S3_SECRET_KEY
+              volumeMounts:
+                - name: data
+                  mountPath: /backup
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: {{ include "wordpress.fullname" . }}-data
+{{- end }}

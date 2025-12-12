@@ -268,3 +268,11 @@ dbBackup:
   bucket: wordpress-backups
   retentionDays: 14       # optional
   filenamePrefixOverride: ""
+
+fileBackup:
+  enabled: true
+  schedule: "30 2 * * *" # daily at 02:30
+  bucket: wordpress-backups
+  path: /backup/uploads
+  retentionDays: 5       # optional
+  backupNamePrefixOverride: ""

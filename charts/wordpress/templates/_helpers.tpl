@@ -103,3 +103,21 @@ Precedence:
 {{- include "wordpress.fullname" . -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve DB backup filename prefix
+
+Precedence:
+1. dbBackup.filenamePrefixOverride
+2. wordpress.fullnameOverride
+3. wordpress.fullname (generated)
+*/}}
+{{- define "wordpress.filesBackupPrefix" -}}
+{{- if .Values.fileBackup.backupNamePrefixOverride -}}
+{{- .Values.fileBackup.backupNamePrefixOverride -}}
+{{- else if .Values.wordpress.fullnameOverride -}}
+{{- .Values.wordpress.fullnameOverride -}}
+{{- else -}}
+{{- include "wordpress.fullname" . -}}
+{{- end -}}
+{{- end -}}
