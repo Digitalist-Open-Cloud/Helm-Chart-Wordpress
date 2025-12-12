@@ -74,7 +74,8 @@ spec:
                 {{- else }}
                 - name: DB_PASSWORD
                   value: {{ $dbPassword | quote }}
-                    - name: S3_URL
+                {{- end }}
+                - name: S3_URL
                   valueFrom:
                     secretKeyRef:
                       name: s3-storage
