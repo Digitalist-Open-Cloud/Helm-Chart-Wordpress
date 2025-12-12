@@ -55,7 +55,26 @@ spec:
 
                   echo "Backup completed successfully"
               env:
-                - name: S3_URL
+                - name: DB_HOST
+                  value: {{ include "wordpress.envValue" (list .Values.env "DB_HOST") | quote }}
+                - name: DB_NAME
+                  value: {{ include "wordpress.envValue" (list .Values.env "DB_NAME") | quote }}
+                - name: DB_USER
+                  value: {{ include "wordpress.envValue" (list .Values.env "DB_USER") | quote }}
+                - name: DB_PREFIX
+                  value: {{ include "wordpress.envValue" (list .Values.env "DB_PREFIX") | quote }}
+                {{- $dbPassword := include "wordpress.envValue" (list .Values.env "DB_PASSWORD") }}
+                {{- $isSecret := (hasPrefix "__SECRET__:" $dbPassword) }}
+                {{- if $isSecret }}
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ index (splitList ":" $dbPassword) 1 }}
+                      key: {{ index (splitList ":" $dbPassword) 2 }}
+                {{- else }}
+                - name: DB_PASSWORD
+                  value: {{ $dbPassword | quote }}
+                    - name: S3_URL
                   valueFrom:
                     secretKeyRef:
                       name: s3-storage
