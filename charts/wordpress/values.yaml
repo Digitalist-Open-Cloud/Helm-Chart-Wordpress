@@ -270,7 +270,7 @@ dbBackup:
   filenamePrefixOverride: ""
 
 fileBackup:
-  enabled: true
+  enabled: false
   schedule: "30 2 * * *" # daily at 02:30
   bucket: wordpress-backups
   path: /backup/uploads
