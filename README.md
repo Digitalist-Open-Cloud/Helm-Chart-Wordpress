@@ -46,4 +46,4 @@ This is forked from <https://github.com/fiveoclock/WordPress-Nginx-Helm-Chart>.
 
 ## Documentation
 
-Simple documentation of values etc generated with helm-docs.
+Simple documentation of values etc generated with helm-docs in chart directory.

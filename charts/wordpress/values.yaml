@@ -261,3 +261,10 @@ dbImport:
 
 minioClientDownload: https://dl.min.io/aistor/mc/release/linux-amd64/mc
 helperImage: alpine:3.22
+
+dbBackup:
+  enabled: false
+  schedule: "0 2 * * *"   # daily at 02:00
+  bucket: wordpress-backups
+  retentionDays: 14       # optional
+  filenamePrefix: wp-db
