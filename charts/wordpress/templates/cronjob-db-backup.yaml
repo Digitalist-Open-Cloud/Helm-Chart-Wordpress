@@ -40,8 +40,8 @@ spec:
                   echo "Configuring S3 alias..."
                   /tmp/mc alias set s3 "$S3_URL" "$S3_ACCESS_KEY" "$S3_SECRET_KEY"
 
-                  echo "Exporting WordPress database..."
-                  wp db export "$BACKUP_FILE" --allow-root
+                  echo "Exporting WordPress database using prefix $DB_PREFIX"
+                  wp db export --tables=$(wp db tables --all-tables-with-prefix --format=csv) "$BACKUP_FILE" --allow-root
 
                   echo "Uploading backup to S3..."
                   /tmp/mc cp "$BACKUP_FILE" \
@@ -56,25 +56,17 @@ spec:
 
                   echo "Backup completed successfully"
               env:
-                - name: DB_HOST
-                  value: {{ include "wordpress.envValue" (list .Values.env "DB_HOST") | quote }}
-                - name: DB_NAME
-                  value: {{ include "wordpress.envValue" (list .Values.env "DB_NAME") | quote }}
-                - name: DB_USER
-                  value: {{ include "wordpress.envValue" (list .Values.env "DB_USER") | quote }}
-                - name: DB_PREFIX
-                  value: {{ include "wordpress.envValue" (list .Values.env "DB_PREFIX") | quote }}
-                {{- $dbPassword := include "wordpress.envValue" (list .Values.env "DB_PASSWORD") }}
-                {{- $isSecret := (hasPrefix "__SECRET__:" $dbPassword) }}
-                {{- if $isSecret }}
-                - name: DB_PASSWORD
+                {{- range .Values.env }}
+                {{- if .valueFromSecret }}
+                - name: {{ .name }}
                   valueFrom:
                     secretKeyRef:
-                      name: {{ index (splitList ":" $dbPassword) 1 }}
-                      key: {{ index (splitList ":" $dbPassword) 2 }}
-                {{- else }}
-                - name: DB_PASSWORD
-                  value: {{ $dbPassword | quote }}
+                      name: {{ .valueFromSecret.secretName | quote }}
+                      key: {{ .valueFromSecret.key | quote }}
+                {{- else if .value }}
+                - name: {{ .name }}
+                  value: {{ .value | quote }}
+                {{- end }}
                 {{- end }}
                 - name: S3_URL
                   valueFrom:
