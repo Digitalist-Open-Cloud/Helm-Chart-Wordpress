@@ -70,4 +70,36 @@ spec:
                     secretKeyRef:
                       name: s3-storage
                       key: S3_SECRET_KEY
+              volumeMounts:
+                {{- if .Values.dotenv.enabled }}
+                - name: dotenv-file
+                  mountPath: /var/www/html/.env
+                  subPath: .env
+                {{- end }}
+                {{- range $env, $val := .Values.wordpressEnvs }}
+                - name: env-{{ $env }}
+                  mountPath: /var/www/html/config/environments/{{ $env }}.php
+                  subPath: {{ $env }}.php
+                {{- end }}
+          volumes:
+            - name: wordpress-app
+              emptyDir: {}
+            - name: wordpress-config
+{{- if and .Values.externalConfigMap.enabled .Values.externalConfigMap.name }}
+              configMap:
+                name: {{ .Values.externalConfigMap.name }}
+{{- else }}
+              configMap:
+                name: {{ include "wordpress.fullname" . }}-config
+{{- end }}
+            {{- if .Values.dotenv.enabled }}
+            - name: dotenv-file
+              secret:
+                secretName: {{ .Values.dotenv.name }}
+            {{- end }}
+{{- range $env, $val := .Values.wordpressEnvs }}
+            - name: env-{{ $env }}
+              configMap:
+                name: {{ include "wordpress.fullname" $ }}-env-{{ $env }}
+{{- end }}
 {{- end }}
