@@ -226,9 +226,7 @@ spec:
           resources:
             {{- toYaml .Values.nginx.resources | nindent 12 }}
           securityContext:
-            runAsUser: 100
-            privileged: false
-            allowPrivilegeEscalation: false
+            {{- toYaml .Values.nginx.securityContext | nindent 12 }}
           ports:
             - name: http
               containerPort: 8080

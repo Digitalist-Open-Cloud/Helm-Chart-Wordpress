@@ -91,6 +91,9 @@ A Helm chart to deploy WordPress in Kubernetes
 | nginx.resources.limits.memory | string | `"256Mi"` |  |
 | nginx.resources.requests.cpu | string | `"10m"` |  |
 | nginx.resources.requests.memory | string | `"20Mi"` |  |
+| nginx.securityContext.allowPrivilegeEscalation | bool | `false` |  |
+| nginx.securityContext.privileged | bool | `false` |  |
+| nginx.securityContext.runAsUser | int | `100` |  |
 | nginx.stripPrefixes | list | `[]` |  |
 | nginx.tag | string | `"1.21.6"` |  |
 | nodeSelector | object | `{}` |  |

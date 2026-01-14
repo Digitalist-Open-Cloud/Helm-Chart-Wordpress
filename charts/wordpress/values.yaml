@@ -25,6 +25,10 @@ nginx:
   # This is useful if you are using sub paths for you domain and targeting
   # different wordpress pods.
   stripPrefixes: []
+  securityContext:
+    runAsUser: 100
+    privileged: false
+    allowPrivilegeEscalation: false
 
 env:
   - name: DB_HOST
