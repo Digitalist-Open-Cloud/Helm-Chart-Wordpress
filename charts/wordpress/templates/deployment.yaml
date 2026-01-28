@@ -119,26 +119,14 @@ spec:
               value: {{ .value | quote }}
             {{- end }}
             {{- end }}
-          {{- if .Values.livenessProbe.enabled }}
+{{- if .Values.wordpress.livenessProbe }}
           livenessProbe:
-            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
-            successThreshold: {{ .Values.livenessProbe.successThreshold }}
-            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
-            tcpSocket:
-              port: php-fpm
-          {{- end }}
-          {{- if .Values.readinessProbe.enabled }}
+{{ toYaml .Values.wordpress.livenessProbe | indent 12 }}
+{{- end }}
+{{- if .Values.wordpress.readinessProbe }}
           readinessProbe:
-            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
-            successThreshold: {{ .Values.readinessProbe.successThreshold }}
-            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
-            tcpSocket:
-              port: php-fpm
-          {{- end }}
+{{ toYaml .Values.wordpress.readinessProbe | indent 12 }}
+{{- end }}
           ports:
             - name: php-fpm
               containerPort: 9000
@@ -230,31 +218,6 @@ spec:
           ports:
             - name: http
               containerPort: 8080
-          {{- if .Values.livenessProbe.enabled }}
-          livenessProbe:
-            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
-            successThreshold: {{ .Values.livenessProbe.successThreshold }}
-            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
-            httpGet:
-              path: /wp-admin/install.php
-              port: http
-              scheme: HTTP
-              httpHeaders:
-                - name: X-Forwarded-Proto
-                  value: https
-          {{- end }}
-          {{- if .Values.readinessProbe.enabled }}
-          readinessProbe:
-            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
-            successThreshold: {{ .Values.readinessProbe.successThreshold }}
-            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
-            tcpSocket:
-              port: http
-          {{- end }}
           volumeMounts:
             - mountPath: /var/www/html/
               name: wordpress-app

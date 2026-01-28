@@ -1,6 +1,6 @@
 # wordpress
 
-![Version: 0.2.57](https://img.shields.io/badge/Version-0.2.57-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
+![Version: 0.2.58](https://img.shields.io/badge/Version-0.2.58-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
 
 A Helm chart to deploy WordPress in Kubernetes
 
@@ -77,12 +77,6 @@ A Helm chart to deploy WordPress in Kubernetes
 | ingress.hosts[0].paths[0].pathType | string | `"Prefix"` |  |
 | ingress.ingressClassName | string | `"nginx"` |  |
 | ingress.tls | list | `[]` |  |
-| livenessProbe.enabled | bool | `true` |  |
-| livenessProbe.failureThreshold | int | `6` |  |
-| livenessProbe.initialDelaySeconds | int | `10` |  |
-| livenessProbe.periodSeconds | int | `20` |  |
-| livenessProbe.successThreshold | int | `1` |  |
-| livenessProbe.timeoutSeconds | int | `5` |  |
 | minioClientDownload | string | `"https://dl.min.io/aistor/mc/release/linux-amd64/mc"` |  |
 | nameOverride | string | `""` |  |
 | nginx.pullPolicy | string | `"Always"` |  |
@@ -102,12 +96,6 @@ A Helm chart to deploy WordPress in Kubernetes
 | podSecurityContext.runAsGroup | int | `82` |  |
 | podSecurityContext.runAsNonRoot | bool | `true` |  |
 | podSecurityContext.runAsUser | int | `82` |  |
-| readinessProbe.enabled | bool | `true` |  |
-| readinessProbe.failureThreshold | int | `6` |  |
-| readinessProbe.initialDelaySeconds | int | `10` |  |
-| readinessProbe.periodSeconds | int | `20` |  |
-| readinessProbe.successThreshold | int | `1` |  |
-| readinessProbe.timeoutSeconds | int | `5` |  |
 | replicaCount | int | `1` |  |
 | resources.limits.cpu | string | `"200m"` |  |
 | resources.limits.memory | string | `"256Mi"` |  |
@@ -124,12 +112,14 @@ A Helm chart to deploy WordPress in Kubernetes
 | serviceAccount.name | string | `""` |  |
 | sidecars | list | `[]` |  |
 | tolerations | list | `[]` |  |
+| wordpress.livenessProbe | list | `[]` |  |
 | wordpress.persistence.accessMode | string | `"ReadWriteOnce"` |  |
 | wordpress.persistence.annotations | object | `{}` |  |
 | wordpress.persistence.enabled | bool | `true` |  |
 | wordpress.persistence.labels | object | `{}` |  |
 | wordpress.persistence.size | string | `"10Gi"` |  |
 | wordpress.persistence.storageClass | string | `"-"` |  |
+| wordpress.readinessProbe | list | `[]` |  |
 | wordpressEnvs | object | `{}` |  |
 
 ----------------------------------------------
