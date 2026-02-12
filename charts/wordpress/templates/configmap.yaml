@@ -18,13 +18,15 @@ data:
     listen = 9000
     listen.allowed_clients = ::1,127.0.0.1,10.42.0.1
     pm.status_path = "/status"
-    pm.max_children = 300
+    pm = dynamic
+    pm.max_children = 16
+    pm.start_servers = 6
+    pm.max_spare_servers = 10
     pm.process_idle_timeout = "10s"
-    pm.max_requests =  500
-    pm.start_servers = 5
-    pm.min_spare_servers = 5
-    pm.max_spare_servers = 300
-    php_admin_value[memory_limit] = "2048M"
+    pm.max_requests = 500
+    php_admin_value[memory_limit] = "512M"
+    php_admin_flag[log_errors] = true
+    access.log = /dev/null
 {{- end }}
   php-opcache-recommended.ini: |-
 {{- if .Values.customConfig.php_opcache }}
@@ -37,6 +39,9 @@ data:
     opcache.validate_timestamps=0
     opcache.revalidate_freq=0
     opcache.fast_shutdown=1
+    opcache.enable_cli=1
+    opcache.file_cache=/tmp/php-opcache
+    opcache.file_cache_only=1
 {{- end }}
   zz-custom.ini: |-
 {{- if .Values.customConfig.php }}

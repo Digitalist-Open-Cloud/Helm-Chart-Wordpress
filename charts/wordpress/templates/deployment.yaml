@@ -146,6 +146,9 @@ spec:
             - mountPath: /usr/local/etc/php/conf.d/opcache-recommended.ini
               name: wordpress-config
               subPath: php-opcache-recommended.ini
+            - mountPath: /tmp/php-opcache
+              name: opcache-file-cache
+              subPath: php-opcache
             {{- if .Values.dotenv.enabled }}
             - name: dotenv-file
               mountPath: /var/www/html/.env
@@ -184,6 +187,9 @@ spec:
             - mountPath: /var/www/html/web/app/uploads/
               name: wordpress-data
               subPath: uploads
+            - mountPath: /tmp/php-opcache
+              name: opcache-file-cache
+              subPath: php-opcache
             {{- if .Values.dotenv.enabled }}
             - name: dotenv-file
               mountPath: /var/www/html/.env
@@ -259,6 +265,8 @@ spec:
         - name: nginx-tmp
           emptyDir:
             medium: Memory
+        - name: opcache-file-cache
+          emptyDir: {}
         - name: nginx-cache
           emptyDir: {}
         {{- if .Values.dotenv.enabled }}
