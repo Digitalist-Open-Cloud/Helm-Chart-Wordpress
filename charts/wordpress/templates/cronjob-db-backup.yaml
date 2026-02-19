@@ -41,7 +41,7 @@ spec:
                   /tmp/mc alias set s3 "$S3_URL" "$S3_ACCESS_KEY" "$S3_SECRET_KEY"
 
                   echo "Exporting WordPress database using prefix $DB_PREFIX"
-                  wp db export --tables=$(wp db tables --all-tables-with-prefix --format=csv) "$BACKUP_FILE" --allow-root
+                  wp db export --skip-extended-insert --tables=$(wp db tables --all-tables-with-prefix --format=csv) "$BACKUP_FILE" --allow-root
 
                   echo "Uploading backup to S3..."
                   /tmp/mc cp "$BACKUP_FILE" \

@@ -37,6 +37,7 @@ spec:
                 -h $DB_HOST \
                 -u $DB_USER \
                 -p"$DB_PASSWORD" \
+                -f \
                 "$DB_NAME" < /tmp/dump.sql
           env:
             - name: DB_HOST
