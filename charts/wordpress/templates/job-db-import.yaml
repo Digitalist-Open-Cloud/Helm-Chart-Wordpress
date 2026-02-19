@@ -38,7 +38,7 @@ spec:
                 -u $DB_USER \
                 -p"$DB_PASSWORD" \
                 -f \
-                "$DB_NAME" < /tmp/dump.sql
+                "$DB_NAME" < /tmp/dump.sql || true
           env:
             - name: DB_HOST
               value: {{ include "wordpress.envValue" (list .Values.env "DB_HOST") | quote }}
