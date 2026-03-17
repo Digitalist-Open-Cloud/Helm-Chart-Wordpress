@@ -39,6 +39,7 @@ spec:
                 -p"$DB_PASSWORD" \
                 -f \
                 "$DB_NAME" < /tmp/dump.sql || true
+              exit 0
           env:
             - name: DB_HOST
               value: {{ include "wordpress.envValue" (list .Values.env "DB_HOST") | quote }}
