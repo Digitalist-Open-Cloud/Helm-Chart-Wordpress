@@ -4,7 +4,7 @@ skip-check:
   # Privileged / allowPrivilegeEscalation: the copy-wordpress init container
   # (and the files-backup/files-import Job containers) run privileged to
   # copy and chown WordPress source and uploads across the php-fpm (uid 82)
-  # and nginx (uid 100) UID boundary onto shared volumes.
+  # and nginx (uid 65532) UID boundary onto shared volumes.
   - CKV_K8S_16
   - CKV_K8S_20
   # Capabilities assigned / NET_RAW: a side effect of the privileged
@@ -22,8 +22,9 @@ skip-check:
   # make every image bump a multi-line change.
   - CKV_K8S_43
   # High UID (>= 10000): uid 82 (www-data) is baked into the wordpress
-  # image's file ownership, and nginx runs at uid 100 (digitalist/nginx's
-  # own user) - raising either breaks file permissions at runtime.
+  # image's file ownership - raising it breaks file permissions at runtime.
+  # (nginx already runs at uid 65532, the digitalist/nginx image's own
+  # "nonroot" user, so this only still applies to the wordpress container.)
   - CKV_K8S_40
   # Read-only root filesystem: php-fpm, nginx and opcache all write to /tmp,
   # pid files and cache directories. Needs per-image writable-path mapping

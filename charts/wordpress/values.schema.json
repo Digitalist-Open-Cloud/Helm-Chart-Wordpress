@@ -693,9 +693,10 @@
               "type": "boolean"
             },
             "runAsUser": {
-              "default": 100,
-              "title": "runAsUser",
-              "type": "integer"
+              "default": "65532",
+              "description": " that owns its pre-created /var/lib/nginx/{logs,tmp,html} directories. Any other uid gets \"Permission denied\" opening the default error log and pid file, since those dirs aren't group/other-writable.",
+              "required": [],
+              "title": "runAsUser"
             }
           },
           "required": [],
@@ -712,7 +713,6 @@
         },
         "tag": {
           "default": "1.31.6",
-          "description": "Overrides the image tag whose default is the chart appVersion.",
           "title": "tag",
           "type": "string"
         }

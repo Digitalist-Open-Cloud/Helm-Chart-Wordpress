@@ -9,7 +9,6 @@ image:
 nginx:
   repository: digitalist/nginx
   pullPolicy: Always
-  # Overrides the image tag whose default is the chart appVersion.
   tag: 1.31.6
   resources:
     limits:
@@ -26,7 +25,11 @@ nginx:
   # different wordpress pods.
   stripPrefixes: []
   securityContext:
-    runAsUser: 100
+    # 65532 is the digitalist/nginx image's own "nonroot" user - the uid
+    # that owns its pre-created /var/lib/nginx/{logs,tmp,html} directories.
+    # Any other uid gets "Permission denied" opening the default error log
+    # and pid file, since those dirs aren't group/other-writable.
+    runAsUser: 65532
     privileged: false
     allowPrivilegeEscalation: false
     capabilities:
