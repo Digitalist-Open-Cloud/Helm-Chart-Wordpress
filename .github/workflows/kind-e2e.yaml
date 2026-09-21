@@ -1,0 +1,214 @@
+name: E2E (kind)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: Install chart on kind
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+
+      - name: Create kind cluster
+        uses: helm/kind-action@ef37e7f390d99f746eb8b610417061a60e82a6cc # v1.14.0
+
+      - name: Create namespace
+        run: kubectl create namespace wordpress
+
+      # ── Database fixture ────────────────────────────────────────────────
+      - name: Install MariaDB
+        run: |
+          kubectl apply -f tests/kind/mariadb.yaml
+          kubectl -n wordpress rollout status deployment/wordpress-mariadb --timeout=300s
+
+      # ── Ingress infrastructure (ingress-nginx) ─────────────────────────
+      - name: Install ingress-nginx
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.15.1/deploy/static/provider/cloud/deploy.yaml
+          kubectl -n ingress-nginx rollout status deployment/ingress-nginx-controller --timeout=300s
+
+      # ── Phase 1: baseline install (ingress, no S3-backed features) ─────
+      - name: Install WordPress chart
+        run: |
+          helm install wordpress charts/wordpress --namespace wordpress \
+            --values tests/kind/values.yaml
+
+      - name: Wait for WordPress rollout
+        run: kubectl -n wordpress rollout status deployment/wordpress --timeout=300s
+
+      - name: Verify PVC bound
+        run: |
+          phase=$(kubectl -n wordpress get pvc wordpress-data -o jsonpath='{.status.phase}')
+          if [ "$phase" != "Bound" ]; then
+            echo "::error::wordpress-data PVC is not Bound (phase=$phase)"
+            kubectl -n wordpress describe pvc wordpress-data
+            exit 1
+          fi
+          echo "wordpress-data PVC is Bound"
+
+      # nginx has no configurable readiness probe in this chart, and the
+      # default wordpress image doesn't ship a bedrock-style app (no
+      # /var/www/html/web), so this only proves the nginx -> php-fpm path is
+      # wired correctly (no 502/503/504), not that a WordPress page renders.
+      - name: Smoke test nginx/php-fpm wiring (in-cluster)
+        run: |
+          kubectl -n wordpress run smoke --rm -i --restart=Never \
+            --image=curlimages/curl:8.14.1 --command -- sh -c '
+            set -e
+            code=$(curl -sS -o /dev/null -w "%{http_code}" http://wordpress/)
+            echo "ClusterIP response: HTTP $code"
+            case "$code" in 5*) echo "gateway error from nginx to php-fpm"; exit 1 ;; esac
+            '
+
+      - name: Test routing through ingress-nginx
+        run: |
+          kubectl -n wordpress run ingress-smoke --rm -i --restart=Never \
+            --image=curlimages/curl:8.14.1 --command -- sh -c '
+            set -e
+            HOST=ingress-nginx-controller.ingress-nginx.svc.cluster.local
+            code=$(curl -sS -o /dev/null -w "%{http_code}" -H "Host: wordpress.example.test" "http://$HOST/")
+            echo "Ingress response: HTTP $code"
+            case "$code" in 5*) echo "gateway error via ingress-nginx"; exit 1 ;; esac
+            '
+
+      # ── Phase 2: fileBackup/fileImport against a MinIO fixture ─────────
+      # dbBackup/dbImport are skipped here - they need `wp` and
+      # `mariadb`/`mysql`, neither of which the chart's default image ships
+      # (confirmed by inspecting it directly). Structural coverage for
+      # those two lives in tests/render/backups-and-imports.yaml instead.
+      - name: Install MinIO and seed fixtures
+        run: |
+          kubectl apply -f tests/kind/minio.yaml
+          kubectl -n wordpress rollout status deployment/wordpress-minio --timeout=180s
+          kubectl -n wordpress wait --for=condition=complete job/wordpress-minio-seed --timeout=120s
+
+      - name: Uninstall and reinstall WordPress with fileBackup/fileImport enabled
+        run: |
+          helm uninstall wordpress --namespace wordpress --wait --timeout=180s
+          helm install wordpress charts/wordpress --namespace wordpress \
+            --values tests/kind/values.yaml \
+            --values tests/kind/values-extras.yaml
+
+      - name: Wait for WordPress rollout (phase 2)
+        run: kubectl -n wordpress rollout status deployment/wordpress --timeout=300s
+
+      - name: Wait for files-import hook Job
+        run: |
+          if ! kubectl -n wordpress wait --for=condition=complete job/wordpress-files-import --timeout=180s; then
+            echo "::error::wordpress-files-import did not complete"
+            kubectl -n wordpress logs job/wordpress-files-import --all-containers --tail=100 || true
+            exit 1
+          fi
+          kubectl -n wordpress logs job/wordpress-files-import --all-containers --tail=50
+
+      - name: Verify imported file landed on the shared PVC
+        run: |
+          set -euo pipefail
+          cat <<EOF | kubectl -n wordpress apply -f -
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: file-import-reader
+          spec:
+            restartPolicy: Never
+            containers:
+            - name: reader
+              image: busybox:1.36
+              command: ["sh", "-c", "cat /mirror/uploads/hello.txt"]
+              volumeMounts:
+              - name: data
+                mountPath: /mirror
+            volumes:
+              - name: data
+                persistentVolumeClaim:
+                  claimName: wordpress-data
+          EOF
+          kubectl -n wordpress wait --for=jsonpath='{.status.phase}'=Succeeded pod/file-import-reader --timeout=60s
+          content=$(kubectl -n wordpress logs pod/file-import-reader)
+          kubectl -n wordpress delete pod file-import-reader --wait=true
+          echo "$content"
+          echo "$content" | grep -q "e2e file-import fixture" || {
+            echo "::error::imported file content did not match the seed fixture"
+            exit 1
+          }
+
+      # fileBackup.path (/backup/uploads) mirrors the live uploads dir, which
+      # is otherwise empty on a fresh cluster - seed a marker file into it
+      # first so the backup CronJob actually has something to upload.
+      - name: Seed a file into the live uploads dir
+        run: |
+          set -euo pipefail
+          cat <<EOF | kubectl -n wordpress apply -f -
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: uploads-writer
+          spec:
+            restartPolicy: Never
+            containers:
+            - name: writer
+              image: busybox:1.36
+              command: ["sh", "-c", "mkdir -p /pvc/uploads && echo 'e2e backup marker' > /pvc/uploads/backup-marker.txt"]
+              volumeMounts:
+              - name: data
+                mountPath: /pvc
+            volumes:
+              - name: data
+                persistentVolumeClaim:
+                  claimName: wordpress-data
+          EOF
+          kubectl -n wordpress wait --for=jsonpath='{.status.phase}'=Succeeded pod/uploads-writer --timeout=60s
+          kubectl -n wordpress delete pod uploads-writer --wait=true
+
+      - name: Trigger files-backup CronJob
+        run: |
+          kubectl -n wordpress create job e2e-wordpress-files-backup \
+            --from=cronjob/wordpress-files-backup
+          if ! kubectl -n wordpress wait --for=condition=complete \
+            job/e2e-wordpress-files-backup --timeout=180s; then
+            echo "::error::files-backup did not complete"
+            kubectl -n wordpress logs job/e2e-wordpress-files-backup --all-containers --tail=100 || true
+            exit 1
+          fi
+          kubectl -n wordpress logs job/e2e-wordpress-files-backup --all-containers --tail=50
+
+      - name: Verify backup object landed in MinIO
+        run: |
+          kubectl -n wordpress run mc-check --rm -i --restart=Never \
+            --image=minio/mc:latest --command -- sh -c '
+            set -e
+            mc alias set s3 http://wordpress-minio:9000 minioadmin minioadmin123
+            echo "--- s3/wordpress-backups/files/ ---"
+            mc find s3/wordpress-backups/files/ --name "backup-marker.txt" | grep -q backup-marker.txt
+            '
+
+      - name: Diagnostics on failure
+        if: failure()
+        run: |
+          echo "::group::resources"
+          kubectl get all -n wordpress || true
+          kubectl -n wordpress get events --sort-by=.lastTimestamp | tail -n 50 || true
+          kubectl -n wordpress get ingress,pvc,cronjob,job -o wide || true
+          echo "::endgroup::"
+          echo "::group::pod status overview"
+          kubectl -n wordpress get pods -o wide || true
+          echo "::endgroup::"
+          for p in $(kubectl -n wordpress get pods -o name); do
+            echo "::group::$p"
+            kubectl -n wordpress describe "$p" | tail -n 60 || true
+            echo "--- current logs ---"
+            kubectl -n wordpress logs "$p" --all-containers --tail=200 || true
+            echo "--- previous logs (last container instance, in case of crash loop) ---"
+            kubectl -n wordpress logs "$p" --all-containers --previous --tail=200 2>/dev/null || true
+            echo "::endgroup::"
+          done
