@@ -1,4 +1,5 @@
 arto
+bridgecrewio
 cstorage
 digitalist
 dotenv
@@ -9,6 +10,7 @@ healthcheck
 hipages
 innodb
 keepalive
+kubeconform
 minioadmin
 mmdb
 mysite
@@ -24,6 +26,8 @@ referer
 requestmethod
 rlimit
 SAMEORIGIN
+sarif
+SARIF
 scgi
 sendfile
 subchart
