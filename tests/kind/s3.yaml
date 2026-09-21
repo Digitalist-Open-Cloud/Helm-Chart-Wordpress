@@ -68,13 +68,16 @@ spec:
               port: 8000
             initialDelaySeconds: 5
             periodSeconds: 5
+          # CloudServer runs three Node processes (index/dataserver/mdserver)
+          # and measured ~920Mi at steady state locally - give it real
+          # headroom rather than guessing low and OOMKilling on startup.
           resources:
             requests:
-              cpu: 50m
-              memory: 128Mi
-            limits:
-              cpu: 500m
+              cpu: 100m
               memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1536Mi
           volumeMounts:
             - name: data
               mountPath: /usr/src/app/localData
