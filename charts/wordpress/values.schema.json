@@ -371,6 +371,14 @@
       "title": "extraConfigMap",
       "type": "object"
     },
+    "extraCronJobs": {
+      "description": "allow-root",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "extraCronJobs"
+    },
     "extraSecrets": {
       "additionalProperties": false,
       "properties": {

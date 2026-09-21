@@ -321,3 +321,16 @@ fileBackup:
   path: /backup/uploads
   retentionDays: 5       # optional
   backupNamePrefixOverride: ""
+
+# Additional CronJobs using the wordpress image (image.repository:image.tag),
+# for arbitrary scheduled commands such as wp-cli maintenance tasks. Each
+# entry needs a unique name, a schedule, and a command.
+# extraCronJobs:
+#   - name: clear-expired-transients
+#     schedule: "0 4 * * *"
+#     command:
+#       - wp
+#       - transient
+#       - delete-expired
+#       - --allow-root
+extraCronJobs: []
