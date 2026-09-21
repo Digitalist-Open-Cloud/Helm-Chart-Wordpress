@@ -25,10 +25,10 @@ nginx:
   # different wordpress pods.
   stripPrefixes: []
   securityContext:
-    # 65532 is the digitalist/nginx image's own "nonroot" user - the uid
-    # that owns its pre-created /var/lib/nginx/{logs,tmp,html} directories.
-    # Any other uid gets "Permission denied" opening the default error log
-    # and pid file, since those dirs aren't group/other-writable.
+    # @schema
+    # type: integer
+    # @schema
+    # -- Uid of the digitalist/nginx image's own nonroot user, which owns its pre-created /var/lib/nginx directories; other uids get a Permission denied error there.
     runAsUser: 65532
     privileged: false
     allowPrivilegeEscalation: false

@@ -693,10 +693,10 @@
               "type": "boolean"
             },
             "runAsUser": {
-              "default": "65532",
-              "description": " that owns its pre-created /var/lib/nginx/{logs,tmp,html} directories. Any other uid gets \"Permission denied\" opening the default error log and pid file, since those dirs aren't group/other-writable.",
-              "required": [],
-              "title": "runAsUser"
+              "default": 65532,
+              "description": "Uid of the digitalist/nginx image's own nonroot user, which owns its pre-created /var/lib/nginx directories; other uids get a Permission denied error there.",
+              "title": "runAsUser",
+              "type": "integer"
             }
           },
           "required": [],

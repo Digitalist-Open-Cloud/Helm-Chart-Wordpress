@@ -19,6 +19,7 @@ mysite
 nindent
 nodelay
 nofile
+nonroot
 nopush
 opcache
 opentype
