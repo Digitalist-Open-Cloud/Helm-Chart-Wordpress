@@ -89,7 +89,7 @@ A Helm chart to deploy WordPress in Kubernetes
 | nginx.securityContext.privileged | bool | `false` |  |
 | nginx.securityContext.runAsUser | int | `100` |  |
 | nginx.stripPrefixes | list | `[]` |  |
-| nginx.tag | string | `"1.21.6"` |  |
+| nginx.tag | string | `"1.31.6"` |  |
 | nodeSelector | object | `{}` |  |
 | podAnnotations | object | `{}` |  |
 | podSecurityContext.fsGroup | int | `82` |  |

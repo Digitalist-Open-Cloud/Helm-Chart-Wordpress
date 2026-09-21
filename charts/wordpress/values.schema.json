@@ -711,7 +711,7 @@
           "title": "stripPrefixes"
         },
         "tag": {
-          "default": "1.21.6",
+          "default": "1.31.6",
           "description": "Overrides the image tag whose default is the chart appVersion.",
           "title": "tag",
           "type": "string"

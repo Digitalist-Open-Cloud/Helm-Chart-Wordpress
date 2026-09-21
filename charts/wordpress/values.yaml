@@ -10,7 +10,7 @@ nginx:
   repository: digitalist/nginx
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: 1.21.6
+  tag: 1.31.6
   resources:
     limits:
       cpu: 200m
