@@ -4,6 +4,8 @@ metadata:
   name: helm-chart.wordpress
   title: WordPress PHP-FPM Nginx Helm Chart
   description: WordPress PHP-FPM Nginx Helm Chart
+  annotations:
+    backstage.io/techdocs-ref: dir:.
 spec:
   type: library
   lifecycle: production
