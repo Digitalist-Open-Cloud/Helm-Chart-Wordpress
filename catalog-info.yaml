@@ -1,7 +1,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: Helm-Chart-Wordpress
+  name: helm-chart.wordpress
   title: WordPress PHP-FPM Nginx Helm Chart
   description: WordPress PHP-FPM Nginx Helm Chart
 spec:
