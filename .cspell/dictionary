@@ -14,7 +14,6 @@ hipages
 innodb
 keepalive
 kubeconform
-mdserver
 mmdb
 mysite
 nindent
@@ -39,5 +38,3 @@ timedout
 trunc
 uwsgi
 webp
-Zenko
-zenko

@@ -1,7 +1,8 @@
-# Baseline values for the kind-based e2e test (.github/workflows/kind-e2e.yaml).
+# Values for the kind-based e2e test (.github/workflows/kind-e2e.yaml).
 # Points the chart's DB env at the MariaDB fixture (tests/kind/mariadb.yaml)
-# and exercises ingress. tests/kind/values-extras.yaml layers the S3-backed
-# backup/import features on top for phase 2.
+# and exercises ingress. The S3-backed backup/import features (dbBackup,
+# fileBackup, dbImport, fileImport) are not exercised here - see the note in
+# kind-e2e.yaml.
 #
 # image.* points at tests/kind/fixture-wordpress, built and `kind load
 # docker-image`-d in the workflow before install - see that Dockerfile for

@@ -44,7 +44,7 @@ jobs:
           kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.15.1/deploy/static/provider/cloud/deploy.yaml
           kubectl -n ingress-nginx rollout status deployment/ingress-nginx-controller --timeout=300s
 
-      # ── Phase 1: baseline install (ingress, no S3-backed features) ─────
+      # ── Install (ingress, no S3-backed features) ────────────────────────
       - name: Install WordPress chart
         run: |
           helm install wordpress charts/wordpress --namespace wordpress \
@@ -84,118 +84,13 @@ jobs:
             echo "$body" | grep -q "wordpress e2e fixture ok"
             '
 
-      # ── Phase 2: fileBackup/fileImport against an S3-compatible fixture ─
-      # dbBackup/dbImport are skipped here - they need `wp` and
-      # `mariadb`/`mysql`, neither of which the chart's default image ships
-      # (confirmed by inspecting it directly). Structural coverage for
-      # those two lives in tests/render/backups-and-imports.yaml instead.
-      - name: Install S3 fixture and seed it
-        run: |
-          kubectl apply -f tests/kind/s3.yaml
-          kubectl -n wordpress rollout status deployment/wordpress-s3 --timeout=180s
-          kubectl -n wordpress wait --for=condition=complete job/wordpress-s3-seed --timeout=120s
-
-      - name: Uninstall and reinstall WordPress with fileBackup/fileImport enabled
-        run: |
-          helm uninstall wordpress --namespace wordpress --wait --timeout=180s
-          helm install wordpress charts/wordpress --namespace wordpress \
-            --values tests/kind/values.yaml \
-            --values tests/kind/values-extras.yaml
-
-      - name: Wait for WordPress rollout (phase 2)
-        run: kubectl -n wordpress rollout status deployment/wordpress --timeout=300s
-
-      - name: Wait for files-import hook Job
-        run: |
-          if ! kubectl -n wordpress wait --for=condition=complete job/wordpress-files-import --timeout=180s; then
-            echo "::error::wordpress-files-import did not complete"
-            kubectl -n wordpress logs job/wordpress-files-import --all-containers --tail=100 || true
-            exit 1
-          fi
-          kubectl -n wordpress logs job/wordpress-files-import --all-containers --tail=50
-
-      - name: Verify imported file landed on the shared PVC
-        run: |
-          set -euo pipefail
-          cat <<EOF | kubectl -n wordpress apply -f -
-          apiVersion: v1
-          kind: Pod
-          metadata:
-            name: file-import-reader
-          spec:
-            restartPolicy: Never
-            containers:
-            - name: reader
-              image: busybox:1.36
-              command: ["sh", "-c", "cat /mirror/uploads/hello.txt"]
-              volumeMounts:
-              - name: data
-                mountPath: /mirror
-            volumes:
-              - name: data
-                persistentVolumeClaim:
-                  claimName: wordpress-data
-          EOF
-          kubectl -n wordpress wait --for=jsonpath='{.status.phase}'=Succeeded pod/file-import-reader --timeout=60s
-          content=$(kubectl -n wordpress logs pod/file-import-reader)
-          kubectl -n wordpress delete pod file-import-reader --wait=true
-          echo "$content"
-          echo "$content" | grep -q "e2e file-import fixture" || {
-            echo "::error::imported file content did not match the seed fixture"
-            exit 1
-          }
-
-      # fileBackup.path (/backup/uploads) mirrors the live uploads dir, which
-      # is otherwise empty on a fresh cluster - seed a marker file into it
-      # first so the backup CronJob actually has something to upload.
-      - name: Seed a file into the live uploads dir
-        run: |
-          set -euo pipefail
-          cat <<EOF | kubectl -n wordpress apply -f -
-          apiVersion: v1
-          kind: Pod
-          metadata:
-            name: uploads-writer
-          spec:
-            restartPolicy: Never
-            containers:
-            - name: writer
-              image: busybox:1.36
-              command: ["sh", "-c", "mkdir -p /pvc/uploads && echo 'e2e backup marker' > /pvc/uploads/backup-marker.txt"]
-              volumeMounts:
-              - name: data
-                mountPath: /pvc
-            volumes:
-              - name: data
-                persistentVolumeClaim:
-                  claimName: wordpress-data
-          EOF
-          kubectl -n wordpress wait --for=jsonpath='{.status.phase}'=Succeeded pod/uploads-writer --timeout=60s
-          kubectl -n wordpress delete pod uploads-writer --wait=true
-
-      - name: Trigger files-backup CronJob
-        run: |
-          kubectl -n wordpress create job e2e-wordpress-files-backup \
-            --from=cronjob/wordpress-files-backup
-          if ! kubectl -n wordpress wait --for=condition=complete \
-            job/e2e-wordpress-files-backup --timeout=180s; then
-            echo "::error::files-backup did not complete"
-            kubectl -n wordpress logs job/e2e-wordpress-files-backup --all-containers --tail=100 || true
-            exit 1
-          fi
-          kubectl -n wordpress logs job/e2e-wordpress-files-backup --all-containers --tail=50
-
-      - name: Verify backup object landed in the S3 fixture
-        run: |
-          kubectl -n wordpress run mc-check --rm -i --restart=Never \
-            --image=curlimages/curl:8.14.1 --command -- sh -c '
-            set -e
-            curl -sSL https://dl.min.io/aistor/mc/release/linux-amd64/mc -o /tmp/mc
-            chmod +x /tmp/mc
-            /tmp/mc alias set s3 http://wordpress-s3:8000 accessKey1 verySecretKey1
-            echo "--- s3/wordpress-backups/files/ ---"
-            /tmp/mc find s3/wordpress-backups/files/ --name "backup-marker.txt" | grep -q backup-marker.txt
-            '
+      # dbBackup/fileBackup/dbImport/fileImport (S3-backed) are not exercised
+      # here - live S3 integration testing was dropped for being too
+      # complicated (deprecated MinIO images, then OOMKilling on the
+      # replacement) and will come back once a real S3 bucket is available
+      # for the e2e test to target. Structural coverage (the chart renders
+      # valid manifests with these enabled) still lives in
+      # tests/render/backups-and-imports.yaml.
 
       - name: Diagnostics on failure
         if: failure()
