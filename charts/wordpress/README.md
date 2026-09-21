@@ -1,6 +1,6 @@
 # wordpress
 
-![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
+![Version: 0.3.1](https://img.shields.io/badge/Version-0.3.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
 
 A Helm chart to deploy WordPress in Kubernetes
 
@@ -52,6 +52,7 @@ A Helm chart to deploy WordPress in Kubernetes
 | externalConfigMap.name | string | `""` |  |
 | extraConfigMap.create | bool | `false` |  |
 | extraConfigMap.data | object | `{}` |  |
+| extraCronJobs | list | `[]` |  |
 | extraSecrets.create | bool | `false` |  |
 | extraSecrets.data | object | `{}` |  |
 | extraVolumeMounts | list | `[]` |  |

@@ -1,5 +1,21 @@
 # Render combination: sidecars, extra secrets/configmap/volumes, dotenv,
-# per-environment config files and the Cavalcade cron sidecar.
+# per-environment config files, extra user-defined CronJobs and the
+# Cavalcade cron sidecar.
+extraCronJobs:
+  - name: clear-expired-transients
+    schedule: "0 4 * * *"
+    command:
+      - wp
+      - transient
+      - delete-expired
+      - --allow-root
+  - name: custom-sync
+    schedule: "*/15 * * * *"
+    command:
+      - /bin/sh
+      - -c
+      - echo hello
+
 sidecars:
   - name: fpm-exporter
     image: hipages/php-fpm_exporter:2.2

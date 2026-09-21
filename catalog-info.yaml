@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: Helm-Chart-Wordpress
+  title: WordPress PHP-FPM Nginx Helm Chart
+  description: WordPress PHP-FPM Nginx Helm Chart
+spec:
+  type: library
+  lifecycle: production
+  owner: digitalist-open-cloud
