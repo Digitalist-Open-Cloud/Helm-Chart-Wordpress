@@ -1,6 +1,6 @@
 # wordpress
 
-![Version: 0.2.58](https://img.shields.io/badge/Version-0.2.58-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
+![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
 
 A Helm chart to deploy WordPress in Kubernetes
 
@@ -13,6 +13,7 @@ A Helm chart to deploy WordPress in Kubernetes
 | autoscaling.maxReplicas | int | `100` |  |
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
+| autoscaling.targetMemoryUtilizationPercentage | string | `nil` |  |
 | cavalcade.enabled | bool | `false` |  |
 | cavalcade.image | string | `"digitalist/cavalcade-docker:0.2"` |  |
 | cavalcade.imagePullPolicy | string | `"Always"` |  |
@@ -86,8 +87,9 @@ A Helm chart to deploy WordPress in Kubernetes
 | nginx.resources.requests.cpu | string | `"10m"` |  |
 | nginx.resources.requests.memory | string | `"20Mi"` |  |
 | nginx.securityContext.allowPrivilegeEscalation | bool | `false` |  |
+| nginx.securityContext.capabilities.drop[0] | string | `"ALL"` |  |
 | nginx.securityContext.privileged | bool | `false` |  |
-| nginx.securityContext.runAsUser | int | `100` |  |
+| nginx.securityContext.runAsUser | int | `65532` | Uid of the digitalist/nginx image's own nonroot user, which owns its pre-created /var/lib/nginx directories; other uids get a Permission denied error there. |
 | nginx.stripPrefixes | list | `[]` |  |
 | nginx.tag | string | `"1.31.6"` |  |
 | nodeSelector | object | `{}` |  |
@@ -96,6 +98,7 @@ A Helm chart to deploy WordPress in Kubernetes
 | podSecurityContext.runAsGroup | int | `82` |  |
 | podSecurityContext.runAsNonRoot | bool | `true` |  |
 | podSecurityContext.runAsUser | int | `82` |  |
+| podSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
 | replicaCount | int | `1` |  |
 | resources.limits.cpu | string | `"200m"` |  |
 | resources.limits.memory | string | `"256Mi"` |  |
@@ -116,6 +119,7 @@ A Helm chart to deploy WordPress in Kubernetes
 | wordpress.persistence.accessMode | string | `"ReadWriteOnce"` |  |
 | wordpress.persistence.annotations | object | `{}` |  |
 | wordpress.persistence.enabled | bool | `true` |  |
+| wordpress.persistence.existingClaim | string | `nil` |  |
 | wordpress.persistence.labels | object | `{}` |  |
 | wordpress.persistence.size | string | `"10Gi"` |  |
 | wordpress.persistence.storageClass | string | `"-"` |  |
