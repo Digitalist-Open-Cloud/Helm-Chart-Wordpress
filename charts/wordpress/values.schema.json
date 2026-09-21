@@ -4,7 +4,6 @@
   "properties": {
     "affinity": {
       "additionalProperties": true,
-      "description": " additionalProperties: true @schema",
       "required": [],
       "title": "affinity"
     },
@@ -33,7 +32,6 @@
         },
         "targetMemoryUtilizationPercentage": {
           "default": "",
-          "description": " type: [integer, \"null\"] required: false @schema",
           "required": [],
           "title": "targetMemoryUtilizationPercentage",
           "type": [
@@ -42,7 +40,12 @@
           ]
         }
       },
-      "required": [],
+      "required": [
+        "enabled",
+        "minReplicas",
+        "maxReplicas",
+        "targetCPUUtilizationPercentage"
+      ],
       "title": "autoscaling",
       "type": "object"
     },
@@ -82,7 +85,10 @@
                   "type": "string"
                 }
               },
-              "required": [],
+              "required": [
+                "cpu",
+                "memory"
+              ],
               "title": "limits",
               "type": "object"
             },
@@ -100,17 +106,28 @@
                   "type": "string"
                 }
               },
-              "required": [],
+              "required": [
+                "cpu",
+                "memory"
+              ],
               "title": "requests",
               "type": "object"
             }
           },
-          "required": [],
+          "required": [
+            "requests",
+            "limits"
+          ],
           "title": "resources",
           "type": "object"
         }
       },
-      "required": [],
+      "required": [
+        "enabled",
+        "image",
+        "imagePullPolicy",
+        "resources"
+      ],
       "title": "cavalcade",
       "type": "object"
     },
@@ -121,7 +138,7 @@
     },
     "customConfig": {
       "additionalProperties": false,
-      "description": " customConfig:   php_fpm: |     [global]     daemonize = no     [www]     listen = 9100",
+      "description": "Override blocks in configmap. This will override the whole entry.\ncustomConfig:\n  php_fpm: |\n    [global]\n    daemonize = no\n    [www]\n    listen = 9100",
       "properties": {
         "nginx_conf": {
           "default": "",
@@ -144,8 +161,14 @@
           "type": "string"
         }
       },
-      "required": [],
-      "title": "customConfig"
+      "required": [
+        "php_fpm",
+        "php_opcache",
+        "php",
+        "nginx_conf"
+      ],
+      "title": "customConfig",
+      "type": "object"
     },
     "dbBackup": {
       "additionalProperties": false,
@@ -176,13 +199,19 @@
           "type": "string"
         }
       },
-      "required": [],
+      "required": [
+        "enabled",
+        "schedule",
+        "bucket",
+        "retentionDays",
+        "filenamePrefixOverride"
+      ],
       "title": "dbBackup",
       "type": "object"
     },
     "dbImport": {
       "additionalProperties": false,
-      "description": " ",
+      "description": "Import db from a backup.\n",
       "properties": {
         "bucket": {
           "default": "wordpress-backups/foo/is/bar",
@@ -205,8 +234,14 @@
           "type": "string"
         }
       },
-      "required": [],
-      "title": "dbImport"
+      "required": [
+        "enabled",
+        "bucket",
+        "path",
+        "file"
+      ],
+      "title": "dbImport",
+      "type": "object"
     },
     "dotenv": {
       "additionalProperties": false,
@@ -223,7 +258,10 @@
           "type": "string"
         }
       },
-      "required": [],
+      "required": [
+        "enabled",
+        "name"
+      ],
       "title": "dotenv",
       "type": "object"
     },
@@ -244,7 +282,10 @@
                 "type": "string"
               }
             },
-            "required": [],
+            "required": [
+              "name",
+              "value"
+            ],
             "type": "object"
           },
           {
@@ -261,7 +302,10 @@
                 "type": "string"
               }
             },
-            "required": [],
+            "required": [
+              "name",
+              "value"
+            ],
             "type": "object"
           },
           {
@@ -278,7 +322,10 @@
                 "type": "string"
               }
             },
-            "required": [],
+            "required": [
+              "name",
+              "value"
+            ],
             "type": "object"
           },
           {
@@ -303,12 +350,18 @@
                     "type": "string"
                   }
                 },
-                "required": [],
+                "required": [
+                  "secretName",
+                  "key"
+                ],
                 "title": "valueFromSecret",
                 "type": "object"
               }
             },
-            "required": [],
+            "required": [
+              "name",
+              "valueFromSecret"
+            ],
             "type": "object"
           },
           {
@@ -325,7 +378,10 @@
                 "type": "string"
               }
             },
-            "required": [],
+            "required": [
+              "name",
+              "value"
+            ],
             "type": "object"
           }
         ],
@@ -348,7 +404,10 @@
           "type": "string"
         }
       },
-      "required": [],
+      "required": [
+        "enabled",
+        "name"
+      ],
       "title": "externalConfigMap",
       "type": "object"
     },
@@ -362,22 +421,23 @@
         },
         "data": {
           "additionalProperties": true,
-          "description": " additionalProperties: true @schema",
           "required": [],
           "title": "data"
         }
       },
-      "required": [],
+      "required": [
+        "create"
+      ],
       "title": "extraConfigMap",
       "type": "object"
     },
     "extraCronJobs": {
-      "description": "allow-root",
+      "description": "Additional CronJobs using the wordpress image (image.repository:image.tag),\nfor arbitrary scheduled commands such as wp-cli maintenance tasks. Each\nentry needs a unique name, a schedule, and a command.\nextraCronJobs:\n  - name: clear-expired-transients\n    schedule: \"0 4 * * *\"\n    command:\n      - wp\n      - transient\n      - delete-expired\n      - --allow-root",
       "items": {
         "required": []
       },
-      "required": [],
-      "title": "extraCronJobs"
+      "title": "extraCronJobs",
+      "type": "array"
     },
     "extraSecrets": {
       "additionalProperties": false,
@@ -389,22 +449,23 @@
         },
         "data": {
           "additionalProperties": true,
-          "description": " additionalProperties: true @schema",
           "required": [],
           "title": "data"
         }
       },
-      "required": [],
+      "required": [
+        "create"
+      ],
       "title": "extraSecrets",
       "type": "object"
     },
     "extraVolumeMounts": {
-      "description": " - name: mySecretVolume   secret:     secretName: wordpress-extra-secrets - name: my.file   configMap:     name: wordpress-extra-config-map     items:     - key: \"my.file\"       path: \"/tmp/my.file\"",
+      "description": "extraVolumes:\n- name: mySecretVolume\n  secret:\n    secretName: wordpress-extra-secrets\n- name: my.file\n  configMap:\n    name: wordpress-extra-config-map\n    items:\n    - key: \"my.file\"\n      path: \"/tmp/my.file\"",
       "items": {
         "required": []
       },
-      "required": [],
-      "title": "extraVolumeMounts"
+      "title": "extraVolumeMounts",
+      "type": "array"
     },
     "extraVolumes": {
       "items": {
@@ -447,13 +508,20 @@
           "type": "string"
         }
       },
-      "required": [],
+      "required": [
+        "enabled",
+        "schedule",
+        "bucket",
+        "path",
+        "retentionDays",
+        "backupNamePrefixOverride"
+      ],
       "title": "fileBackup",
       "type": "object"
     },
     "fileImport": {
       "additionalProperties": false,
-      "description": " ",
+      "description": "Import files from a backup.\n",
       "properties": {
         "bucket": {
           "default": "wordpress-files",
@@ -471,8 +539,13 @@
           "type": "string"
         }
       },
-      "required": [],
-      "title": "fileImport"
+      "required": [
+        "enabled",
+        "bucket",
+        "path"
+      ],
+      "title": "fileImport",
+      "type": "object"
     },
     "fullnameOverride": {
       "default": "",
@@ -509,24 +582,27 @@
           "type": "string"
         }
       },
-      "required": [],
+      "required": [
+        "repository",
+        "pullPolicy",
+        "tag"
+      ],
       "title": "image",
       "type": "object"
     },
     "imagePullSecrets": {
-      "description": " # imagePullSecrets: #   - name: myRegistryKeySecretName #",
+      "description": "# As:\n# imagePullSecrets:\n#   - name: myRegistryKeySecretName\n#",
       "items": {
         "required": []
       },
-      "required": [],
-      "title": "imagePullSecrets"
+      "title": "imagePullSecrets",
+      "type": "array"
     },
     "ingress": {
       "additionalProperties": false,
       "properties": {
         "annotations": {
           "additionalProperties": true,
-          "description": " additionalProperties: true @schema",
           "required": [],
           "title": "annotations"
         },
@@ -536,7 +612,7 @@
           "type": "boolean"
         },
         "hosts": {
-          "description": " kubernetes.io/tls-acme: \"true\"",
+          "description": "kubernetes.io/ingress.class: nginx\nkubernetes.io/tls-acme: \"true\"",
           "items": {
             "anyOf": [
               {
@@ -564,7 +640,10 @@
                               "type": "string"
                             }
                           },
-                          "required": [],
+                          "required": [
+                            "path",
+                            "pathType"
+                          ],
                           "type": "object"
                         }
                       ],
@@ -574,14 +653,17 @@
                     "type": "array"
                   }
                 },
-                "required": [],
+                "required": [
+                  "host",
+                  "paths"
+                ],
                 "type": "object"
               }
             ],
             "required": []
           },
-          "required": [],
-          "title": "hosts"
+          "title": "hosts",
+          "type": "array"
         },
         "ingressClassName": {
           "default": "nginx",
@@ -596,7 +678,12 @@
           "type": "array"
         }
       },
-      "required": [],
+      "required": [
+        "enabled",
+        "ingressClassName",
+        "hosts",
+        "tls"
+      ],
       "title": "ingress",
       "type": "object"
     },
@@ -640,7 +727,10 @@
                   "type": "string"
                 }
               },
-              "required": [],
+              "required": [
+                "cpu",
+                "memory"
+              ],
               "title": "limits",
               "type": "object"
             },
@@ -658,12 +748,18 @@
                   "type": "string"
                 }
               },
-              "required": [],
+              "required": [
+                "cpu",
+                "memory"
+              ],
               "title": "requests",
               "type": "object"
             }
           },
-          "required": [],
+          "required": [
+            "limits",
+            "requests"
+          ],
           "title": "resources",
           "type": "object"
         },
@@ -691,7 +787,9 @@
                   "type": "array"
                 }
               },
-              "required": [],
+              "required": [
+                "drop"
+              ],
               "title": "capabilities",
               "type": "object"
             },
@@ -707,17 +805,21 @@
               "type": "integer"
             }
           },
-          "required": [],
+          "required": [
+            "privileged",
+            "allowPrivilegeEscalation",
+            "capabilities"
+          ],
           "title": "securityContext",
           "type": "object"
         },
         "stripPrefixes": {
-          "description": " want to strip /mysite/ from request, so you get /foo instead you add: stripPrefixes:   - mysite This is useful if you are using sub paths for you domain and targeting different wordpress pods.",
+          "description": "Prefixes to strip from request, if request is /mysite/foo and you\nwant to strip /mysite/ from request, so you get /foo instead you add:\nstripPrefixes:\n  - mysite\nThis is useful if you are using sub paths for you domain and targeting\ndifferent wordpress pods.",
           "items": {
             "required": []
           },
-          "required": [],
-          "title": "stripPrefixes"
+          "title": "stripPrefixes",
+          "type": "array"
         },
         "tag": {
           "default": "1.31.6",
@@ -725,19 +827,24 @@
           "type": "string"
         }
       },
-      "required": [],
+      "required": [
+        "repository",
+        "pullPolicy",
+        "tag",
+        "resources",
+        "stripPrefixes",
+        "securityContext"
+      ],
       "title": "nginx",
       "type": "object"
     },
     "nodeSelector": {
       "additionalProperties": true,
-      "description": " additionalProperties: true @schema",
       "required": [],
       "title": "nodeSelector"
     },
     "podAnnotations": {
       "additionalProperties": true,
-      "description": " additionalProperties: true @schema",
       "required": [],
       "title": "podAnnotations"
     },
@@ -773,12 +880,20 @@
               "type": "string"
             }
           },
-          "required": [],
+          "required": [
+            "type"
+          ],
           "title": "seccompProfile",
           "type": "object"
         }
       },
-      "required": [],
+      "required": [
+        "runAsNonRoot",
+        "runAsUser",
+        "runAsGroup",
+        "fsGroup",
+        "seccompProfile"
+      ],
       "title": "podSecurityContext",
       "type": "object"
     },
@@ -804,7 +919,10 @@
               "type": "string"
             }
           },
-          "required": [],
+          "required": [
+            "cpu",
+            "memory"
+          ],
           "title": "limits",
           "type": "object"
         },
@@ -822,12 +940,18 @@
               "type": "string"
             }
           },
-          "required": [],
+          "required": [
+            "cpu",
+            "memory"
+          ],
           "title": "requests",
           "type": "object"
         }
       },
-      "required": [],
+      "required": [
+        "limits",
+        "requests"
+      ],
       "title": "resources",
       "type": "object"
     },
@@ -860,7 +984,9 @@
               "type": "array"
             }
           },
-          "required": [],
+          "required": [
+            "drop"
+          ],
           "title": "capabilities",
           "type": "object"
         },
@@ -870,7 +996,11 @@
           "type": "boolean"
         }
       },
-      "required": [],
+      "required": [
+        "allowPrivilegeEscalation",
+        "capabilities",
+        "privileged"
+      ],
       "title": "securityContext",
       "type": "object"
     },
@@ -888,7 +1018,10 @@
           "type": "string"
         }
       },
-      "required": [],
+      "required": [
+        "type",
+        "port"
+      ],
       "title": "service",
       "type": "object"
     },
@@ -897,7 +1030,7 @@
       "properties": {
         "annotations": {
           "additionalProperties": true,
-          "description": " @schema additionalProperties: true @schema",
+          "description": "Annotations to add to the service account",
           "required": [],
           "title": "annotations"
         },
@@ -909,12 +1042,15 @@
         },
         "name": {
           "default": "",
-          "description": " If not set and create is true, a name is generated using the fullname template",
-          "required": [],
-          "title": "name"
+          "description": "The name of the service account to use.\nIf not set and create is true, a name is generated using the fullname template",
+          "title": "name",
+          "type": "string"
         }
       },
-      "required": [],
+      "required": [
+        "create",
+        "name"
+      ],
       "title": "serviceAccount",
       "type": "object"
     },
@@ -937,16 +1073,16 @@
       "additionalProperties": false,
       "properties": {
         "livenessProbe": {
-          "description": "   httpGet:     path: /ping     port: 8080   initialDelaySeconds: 30   periodSeconds: 10   timeoutSeconds: 2   failureThreshold: 3",
+          "description": "livenessProbe:\n  httpGet:\n    path: /ping\n    port: 8080\n  initialDelaySeconds: 30\n  periodSeconds: 10\n  timeoutSeconds: 2\n  failureThreshold: 3",
           "items": {
             "required": []
           },
-          "required": [],
-          "title": "livenessProbe"
+          "title": "livenessProbe",
+          "type": "array"
         },
         "persistence": {
           "additionalProperties": false,
-          "description": " # ref: http://kubernetes.io/docs/user-guide/persistent-volumes/ #",
+          "description": "# Enable persistence using Persistent Volume Claims\n# ref: http://kubernetes.io/docs/user-guide/persistent-volumes/\n#",
           "properties": {
             "accessMode": {
               "default": "ReadWriteOnce",
@@ -955,7 +1091,6 @@
             },
             "annotations": {
               "additionalProperties": true,
-              "description": " additionalProperties: true @schema",
               "required": [],
               "title": "annotations"
             },
@@ -966,7 +1101,7 @@
             },
             "existingClaim": {
               "default": "",
-              "description": " # If you want to reuse an existing claim, you can pass the name of the PVC using # the existingClaim variable @schema type: [string, \"null\"] required: false @schema",
+              "description": "#\n# If you want to reuse an existing claim, you can pass the name of the PVC using\n# the existingClaim variable",
               "required": [],
               "title": "existingClaim",
               "type": [
@@ -976,7 +1111,6 @@
             },
             "labels": {
               "additionalProperties": true,
-              "description": " additionalProperties: true @schema",
               "required": [],
               "title": "labels"
             },
@@ -987,34 +1121,79 @@
             },
             "storageClass": {
               "default": "-",
-              "description": " # If defined, storageClassName: \u003cstorageClass\u003e # If set to \"-\", storageClassName: \"\", which disables dynamic provisioning # If undefined (the default) or set to null, no storageClassName spec is #   set, choosing the default provisioner.  (gp2 on AWS, standard on #   GKE, AWS \u0026 OpenStack) #",
-              "required": [],
-              "title": "storageClass"
+              "description": "# wordpress data Persistent Volume Storage Class\n# If defined, storageClassName: \u003cstorageClass\u003e\n# If set to \"-\", storageClassName: \"\", which disables dynamic provisioning\n# If undefined (the default) or set to null, no storageClassName spec is\n#   set, choosing the default provisioner.  (gp2 on AWS, standard on\n#   GKE, AWS \u0026 OpenStack)\n#",
+              "title": "storageClass",
+              "type": "string"
             }
           },
-          "required": [],
-          "title": "persistence"
+          "required": [
+            "enabled",
+            "storageClass",
+            "accessMode",
+            "size"
+          ],
+          "title": "persistence",
+          "type": "object"
         },
         "readinessProbe": {
-          "description": "   httpGet:     path: /status     port: 8080   initialDelaySeconds: 10   periodSeconds: 5   timeoutSeconds: 2   failureThreshold: 3",
+          "description": "readinessProbe:\n  httpGet:\n    path: /status\n    port: 8080\n  initialDelaySeconds: 10\n  periodSeconds: 5\n  timeoutSeconds: 2\n  failureThreshold: 3",
           "items": {
             "required": []
           },
-          "required": [],
-          "title": "readinessProbe"
+          "title": "readinessProbe",
+          "type": "array"
         }
       },
-      "required": [],
+      "required": [
+        "persistence",
+        "livenessProbe",
+        "readinessProbe"
+      ],
       "title": "wordpress",
       "type": "object"
     },
     "wordpressEnvs": {
       "additionalProperties": true,
-      "description": " This mounts into '/var/www/html/config/environments/staging.php' if you name it staging. wordpressEnvs:   staging: |     \u003c?php define('WP_ENV', 'staging');     define('WP_DEBUG', true); @schema additionalProperties: true @schema",
+      "description": "Dynamic create, or override a whole WordPress environment, like 'staging', 'development' etc.\nThis mounts into '/var/www/html/config/environments/staging.php' if you name it staging.\nwordpressEnvs:\n  staging: |\n    \u003c?php define('WP_ENV', 'staging');\n    define('WP_DEBUG', true);",
       "required": [],
       "title": "wordpressEnvs"
     }
   },
-  "required": [],
+  "required": [
+    "replicaCount",
+    "rolloutStrategy",
+    "image",
+    "nginx",
+    "env",
+    "imagePullSecrets",
+    "nameOverride",
+    "fullnameOverride",
+    "serviceAccount",
+    "podSecurityContext",
+    "securityContext",
+    "service",
+    "ingress",
+    "resources",
+    "autoscaling",
+    "tolerations",
+    "wordpress",
+    "sidecars",
+    "extraSecrets",
+    "extraConfigMap",
+    "extraVolumes",
+    "extraVolumeMounts",
+    "dotenv",
+    "component",
+    "externalConfigMap",
+    "customConfig",
+    "cavalcade",
+    "fileImport",
+    "dbImport",
+    "minioClientDownload",
+    "helperImage",
+    "dbBackup",
+    "fileBackup",
+    "extraCronJobs"
+  ],
   "type": "object"
 }
