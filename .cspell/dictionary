@@ -3,6 +3,8 @@ bridgecrewio
 cstorage
 digitalist
 dotenv
+elif
+endgroup
 fastcgi
 fontobject
 geoip
@@ -31,6 +33,7 @@ SARIF
 scgi
 sendfile
 subchart
+subpaths
 timedout
 trunc
 uwsgi
