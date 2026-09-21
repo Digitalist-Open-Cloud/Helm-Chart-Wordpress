@@ -1,0 +1,138 @@
+# S3-compatible fixture for the kind-based e2e test, standing in for the
+# backend the fileBackup CronJob and fileImport Job talk to. Also seeds the
+# bucket tests/kind/values-extras.yaml's fileImport reads from.
+#
+# Uses Zenko CloudServer (zenko/cloudserver), not MinIO: minio/minio and
+# minio/mc were pulled from Docker Hub (MinIO Inc. moved off it), and the
+# chart's own backup/import scripts already depend on MinIO's `mc` client
+# purely as an S3 CLI - any S3-compatible server works as the target, so
+# this doesn't need to be MinIO at all. Verified locally against the exact
+# `mc` binary the chart's own Jobs download (mb/cp/find/mirror/rm all work).
+#
+# REMOTE_MANAGEMENT_DISABLE=1 skips CloudServer's default phone-home
+# registration with Zenko's remote management service, which otherwise
+# blocks the server from becoming reachable in an offline/sandboxed runner.
+# accessKey1/verySecretKey1 are CloudServer's built-in default credentials.
+#
+# CI fixture only - not for production use.
+---
+# Name/keys expected by the chart's backup/import CronJobs and Jobs.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: s3-storage
+  namespace: wordpress
+type: Opaque
+stringData:
+  S3_URL: http://wordpress-s3:8000
+  S3_ACCESS_KEY: accessKey1
+  S3_SECRET_KEY: verySecretKey1
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wordpress-file-import-seed
+  namespace: wordpress
+data:
+  hello.txt: |
+    e2e file-import fixture
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress-s3
+  namespace: wordpress
+  labels:
+    app: wordpress-s3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress-s3
+  template:
+    metadata:
+      labels:
+        app: wordpress-s3
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: cloudserver
+          image: zenko/cloudserver:latest
+          env:
+            - name: REMOTE_MANAGEMENT_DISABLE
+              value: "1"
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: data
+              mountPath: /usr/src/app/localData
+            - name: metadata
+              mountPath: /usr/src/app/localMetadata
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: metadata
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-s3
+  namespace: wordpress
+  labels:
+    app: wordpress-s3
+spec:
+  ports:
+    - port: 8000
+      protocol: TCP
+  selector:
+    app: wordpress-s3
+---
+# One-shot bucket + fixture seeding, run once CloudServer is ready. Uses the
+# same mc binary/download URL the chart's own Jobs use (minioClientDownload
+# in values.yaml), rather than an image tagged minio/mc - proving the
+# fixture works with the chart's actual client, not a stand-in.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: wordpress-s3-seed
+  namespace: wordpress
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: seed
+          image: curlimages/curl:8.14.1
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -euo pipefail
+              curl -sSL https://dl.min.io/aistor/mc/release/linux-amd64/mc -o /tmp/mc
+              chmod +x /tmp/mc
+              /tmp/mc alias set s3 http://wordpress-s3:8000 accessKey1 verySecretKey1
+              /tmp/mc mb -p s3/wordpress-backups
+              /tmp/mc mb -p s3/wordpress-files
+              /tmp/mc cp /seed/hello.txt s3/wordpress-files/hello.txt
+              echo "Seed complete"
+          volumeMounts:
+            - name: seed
+              mountPath: /seed
+      volumes:
+        - name: seed
+          configMap:
+            name: wordpress-file-import-seed

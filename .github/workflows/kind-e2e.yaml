@@ -84,16 +84,16 @@ jobs:
             echo "$body" | grep -q "wordpress e2e fixture ok"
             '
 
-      # ── Phase 2: fileBackup/fileImport against a MinIO fixture ─────────
+      # ── Phase 2: fileBackup/fileImport against an S3-compatible fixture ─
       # dbBackup/dbImport are skipped here - they need `wp` and
       # `mariadb`/`mysql`, neither of which the chart's default image ships
       # (confirmed by inspecting it directly). Structural coverage for
       # those two lives in tests/render/backups-and-imports.yaml instead.
-      - name: Install MinIO and seed fixtures
+      - name: Install S3 fixture and seed it
         run: |
-          kubectl apply -f tests/kind/minio.yaml
-          kubectl -n wordpress rollout status deployment/wordpress-minio --timeout=180s
-          kubectl -n wordpress wait --for=condition=complete job/wordpress-minio-seed --timeout=120s
+          kubectl apply -f tests/kind/s3.yaml
+          kubectl -n wordpress rollout status deployment/wordpress-s3 --timeout=180s
+          kubectl -n wordpress wait --for=condition=complete job/wordpress-s3-seed --timeout=120s
 
       - name: Uninstall and reinstall WordPress with fileBackup/fileImport enabled
         run: |
@@ -185,14 +185,16 @@ jobs:
           fi
           kubectl -n wordpress logs job/e2e-wordpress-files-backup --all-containers --tail=50
 
-      - name: Verify backup object landed in MinIO
+      - name: Verify backup object landed in the S3 fixture
         run: |
           kubectl -n wordpress run mc-check --rm -i --restart=Never \
-            --image=minio/mc:latest --command -- sh -c '
+            --image=curlimages/curl:8.14.1 --command -- sh -c '
             set -e
-            mc alias set s3 http://wordpress-minio:9000 minioadmin minioadmin123
+            curl -sSL https://dl.min.io/aistor/mc/release/linux-amd64/mc -o /tmp/mc
+            chmod +x /tmp/mc
+            /tmp/mc alias set s3 http://wordpress-s3:8000 accessKey1 verySecretKey1
             echo "--- s3/wordpress-backups/files/ ---"
-            mc find s3/wordpress-backups/files/ --name "backup-marker.txt" | grep -q backup-marker.txt
+            /tmp/mc find s3/wordpress-backups/files/ --name "backup-marker.txt" | grep -q backup-marker.txt
             '
 
       - name: Diagnostics on failure

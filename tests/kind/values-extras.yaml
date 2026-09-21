@@ -1,8 +1,8 @@
 # Phase 2 overlay for the kind e2e test: layers the S3-backed file backup
 # CronJob and the file import hook Job on top of tests/kind/values.yaml.
 # Applied as a fresh install (not an upgrade) so the post-install import
-# hook actually fires. Points at the MinIO fixture (tests/kind/minio.yaml),
-# which pre-seeds the bucket fileImport reads from.
+# hook actually fires. Points at the S3 fixture (tests/kind/s3.yaml), which
+# pre-seeds the bucket fileImport reads from.
 #
 # dbBackup/dbImport are deliberately left disabled here: they shell out to
 # `wp` and `mariadb`/`mysql` (cronjob-db-backup.yaml, job-db-import.yaml),

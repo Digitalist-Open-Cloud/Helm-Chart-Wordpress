@@ -8,12 +8,12 @@ endgroup
 fastcgi
 fontobject
 geoip
+curlimages
 healthcheck
 hipages
 innodb
 keepalive
 kubeconform
-minioadmin
 mmdb
 mysite
 nindent
@@ -38,3 +38,5 @@ timedout
 trunc
 uwsgi
 webp
+Zenko
+zenko
