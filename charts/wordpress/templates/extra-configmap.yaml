@@ -2,13 +2,13 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "directus.fullname" . }}-extra-config-map
+  name: {{ include "wordpress.fullname" . }}-extra-config-map
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "directus.labels" . | nindent 4 }}
+    {{- include "wordpress.labels" . | nindent 4 }}
 data:
-{{- if  and .Values.extraConfigMaps.create .Values.extraConfigMaps.data }}
-{{- range $index, $content := .Values.extraConfigMaps.data }}
+{{- if  and .Values.extraConfigMap.create .Values.extraConfigMap.data }}
+{{- range $index, $content := .Values.extraConfigMap.data }}
   {{ $index }}: |-
 {{ $content | indent 4 }}
 {{- end }}

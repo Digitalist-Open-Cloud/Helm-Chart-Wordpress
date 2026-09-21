@@ -32,6 +32,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "wordpress.serviceAccountName" . }}
+      automountServiceAccountToken: false
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
@@ -51,6 +52,8 @@ spec:
           volumeMounts:
             - mountPath: /wordpress-app/
               name: wordpress-app
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
       containers:
 {{- range .Values.sidecars }}
         - name: {{ .name }}
