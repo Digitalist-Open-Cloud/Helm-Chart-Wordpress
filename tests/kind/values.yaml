@@ -24,6 +24,13 @@ wordpress:
       port: 9000
     initialDelaySeconds: 5
     periodSeconds: 5
+  persistence:
+    # The chart's own default ("-") renders storageClassName: "" on the PVC,
+    # which is meant for clusters with a manually pre-provisioned PV and
+    # never binds on a fresh cluster with no matching PV. Clearing it here
+    # omits storageClassName entirely, so kind's default StorageClass
+    # (local-path-provisioner) dynamically provisions it instead.
+    storageClass: ""
 
 resources:
   requests:
