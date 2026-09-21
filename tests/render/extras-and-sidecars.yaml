@@ -1,0 +1,61 @@
+# Render combination: sidecars, extra secrets/configmap/volumes, dotenv,
+# per-environment config files and the Cavalcade cron sidecar.
+sidecars:
+  - name: fpm-exporter
+    image: hipages/php-fpm_exporter:2.2
+    imagePullPolicy: IfNotPresent
+    env:
+      - name: PHP_FPM_SCRAPE_URI
+        value: "tcp://127.0.0.1:9000/status"
+    ports:
+      - name: metrics
+        containerPort: 9253
+    resources:
+      requests:
+        cpu: 5m
+        memory: 16Mi
+      limits:
+        cpu: 50m
+        memory: 64Mi
+
+extraSecrets:
+  create: true
+  data:
+    # base64 encoded
+    api-token: Zm9vCg==
+
+extraConfigMap:
+  create: true
+  data:
+    my.file: |
+      foo: bar
+
+extraVolumes:
+  - name: extra-secret-volume
+    secret:
+      secretName: wordpress-extra-secrets
+  - name: my.file
+    configMap:
+      name: wordpress-extra-config-map
+      items:
+        - key: my.file
+          path: my.file
+
+extraVolumeMounts:
+  - name: extra-secret-volume
+    mountPath: /foo/secrets/extra-secret-volume/
+  - name: my.file
+    mountPath: /tmp/my.file
+    subPath: my.file
+
+dotenv:
+  enabled: true
+  name: wordpress-dotenv
+
+wordpressEnvs:
+  staging: |
+    <?php define('WP_ENV', 'staging');
+    define('WP_DEBUG', true);
+
+cavalcade:
+  enabled: true

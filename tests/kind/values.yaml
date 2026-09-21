@@ -1,0 +1,52 @@
+# Baseline values for the kind-based e2e test (.github/workflows/kind-e2e.yaml).
+# Points the chart's DB env at the MariaDB fixture (tests/kind/mariadb.yaml)
+# and exercises ingress. tests/kind/values-extras.yaml layers the S3-backed
+# backup/import features on top for phase 2.
+env:
+  - name: DB_HOST
+    value: wordpress-mariadb
+  - name: DB_NAME
+    value: wordpress
+  - name: DB_USER
+    value: root
+  - name: DB_PASSWORD
+    valueFromSecret:
+      secretName: wordpress-mariadb
+      key: password
+  - name: DB_PREFIX
+    value: wp_
+
+# No default probe ships with the chart (opt-in); a TCP check on the
+# php-fpm port gives the e2e rollout wait something real to gate on.
+wordpress:
+  readinessProbe:
+    tcpSocket:
+      port: 9000
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+nginx:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  hosts:
+    - host: wordpress.example.test
+      paths:
+        - path: /
+          pathType: Prefix
