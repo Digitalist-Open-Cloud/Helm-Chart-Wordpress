@@ -1,6 +1,7 @@
 arto
 bridgecrewio
 cstorage
+curlimages
 digitalist
 dotenv
 elif
@@ -8,12 +9,13 @@ endgroup
 fastcgi
 fontobject
 geoip
-curlimages
 healthcheck
+highlightjs
 hipages
 innodb
 keepalive
 kubeconform
+mkdocs
 mmdb
 mysite
 nindent
@@ -26,6 +28,7 @@ opentype
 pipefail
 postpass
 referer
+regen
 requestmethod
 rlimit
 SAMEORIGIN
@@ -35,6 +38,7 @@ scgi
 sendfile
 subchart
 subpaths
+techdocs
 timedout
 trunc
 uwsgi

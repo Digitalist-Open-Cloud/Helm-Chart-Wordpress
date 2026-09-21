@@ -1,0 +1,65 @@
+# Testing
+
+Five CI workflows plus one local-only asset (`tests/`). All run on every push/PR to `main`.
+
+## Render matrix (`render.yaml`)
+
+For every file in `tests/render/*.yaml` plus `tests/kind/values.yaml`, runs `helm lint`, `helm template`, and validates the rendered output against upstream Kubernetes JSON schemas with [`kubeconform`](https://github.com/yannh/kubeconform). This is pure static validation - no cluster, no external images pulled beyond what `kubeconform`'s schema fetch needs.
+
+Each `tests/render/*.yaml` file is a values combination chosen to exercise a distinct set of optional templates together:
+
+| File | Exercises |
+|---|---|
+| `default.yaml` | Chart defaults, no overrides |
+| `ingress-and-scaling.yaml` | Ingress + TLS, autoscaling/HPA, `LoadBalancer` service |
+| `extras-and-sidecars.yaml` | Sidecars, extra secrets/configmap/volumes, `dotenv`, `wordpressEnvs`, `extraCronJobs`, Cavalcade |
+| `backups-and-imports.yaml` | `dbBackup`/`fileBackup`/`dbImport`/`fileImport` all enabled together |
+| `custom-config.yaml` | `customConfig` overrides for every config block, `externalConfigMap` |
+| `components-disabled.yaml` | Optional components off, `wordpress.persistence.existingClaim` |
+
+Run it locally:
+
+```bash
+for values in tests/render/*.yaml tests/kind/values.yaml; do
+  helm lint charts/wordpress --values "$values"
+  helm template wordpress charts/wordpress --values "$values" | kubeconform -strict -summary -schema-location default
+done
+```
+
+When adding a values-driven template branch, add or extend a fixture here rather than only relying on the kind e2e test - it's near-instant and doesn't need a cluster or any external image.
+
+## Schema drift (`schema.yaml`)
+
+Fails if `charts/wordpress/values.schema.json` doesn't match what `helm-schema` would generate right now. Regenerate it (see [Contributing](contributing.md#regenerating-the-schema-and-docs)) after touching `values.yaml`, and commit the result.
+
+## Security scan (`checkov.yaml`)
+
+Runs [Checkov](https://www.checkov.io/) against the chart's default render. `charts/wordpress/.checkov.yaml` lists deliberate skips, each with a comment explaining why (a real chart constraint - e.g. a baked-in low uid - not just a check being inconvenient). Run locally:
+
+```bash
+checkov -d charts/wordpress --framework helm --config-file charts/wordpress/.checkov.yaml
+```
+
+If checkov reports a *new* failing check, fix the underlying template/values default first; only add it to the skip list if there's a genuine, documentable reason it can't be fixed (matching the existing skips' style).
+
+## Spelling (`spelling.yaml`)
+
+[`cspell`](https://cspell.org/) against the whole repo, configured by `cspell.json` + the word list in `.cspell/dictionary`. Run locally with `npx cspell "**/*"`. Add genuinely new technical terms to `.cspell/dictionary` (one per line, alphabetical) rather than sprinkling `cspell:ignore` comments.
+
+## Live cluster (`kind-e2e.yaml`)
+
+Boots a [kind](https://kind.sigs.k8s.io/) cluster and does a real `helm install`, then checks that the pod actually starts and serves traffic:
+
+1. Builds and `kind load docker-image`s `tests/kind/fixture-wordpress/Dockerfile` - a tiny image `FROM` the chart's own default `image`, with just enough of a Bedrock layout (`web/wp-config.php`, `web/index.php`) added for the init container and nginx to work at all. See that Dockerfile's comment for why this exists instead of using the default image directly.
+2. Installs a throwaway MariaDB (`tests/kind/mariadb.yaml`) and ingress-nginx.
+3. `helm install`s the chart with `tests/kind/values.yaml` (points `env`/`image` at the fixtures above, clears `wordpress.persistence.storageClass` so the PVC actually binds on kind's `local-path` provisioner instead of sitting `Pending` against the chart's `storageClassName: ""` default).
+4. Waits for the Deployment's rollout, checks the PVC is `Bound`, then curls the pod both directly and through ingress-nginx, asserting the fixture image's known response body comes back.
+
+!!! note "What this does *not* cover"
+    `dbBackup`/`fileBackup`/`dbImport`/`fileImport` (S3-backed) aren't exercised live here - that was removed after two rounds of real trouble (MinIO's Docker Hub images being pulled entirely, then the replacement OOMKilling on default resource limits) made it too fragile for the value it added at the time. Structural coverage - the chart renders valid manifests with all four enabled - still lives in `tests/render/backups-and-imports.yaml`. Live S3 e2e coverage is expected to come back once a real S3 bucket is available for the test to target, rather than another disposable in-cluster fixture.
+
+If you need to debug a kind-e2e failure precisely, `docker run` the exact image/command locally rather than iterating on cluster runs - most of the real bugs found while building this suite (the nginx uid, the `chmod .../web/wp-config.php` layout mismatch, the mc/wp-cli tooling gaps) were found this way, against the *actual* images, faster and more conclusively than reasoning about Kubernetes YAML.
+
+## Docs (`techdocs.yml`)
+
+Publishes this site via Backstage TechDocs on every push. `mkdocs.yml` (repo root) defines the nav and theme; pages live under `docs/`.

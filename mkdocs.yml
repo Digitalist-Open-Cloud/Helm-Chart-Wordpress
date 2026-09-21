@@ -9,5 +9,11 @@ markdown_extensions:
   - admonition
 
 nav:
-  - Overview:
-      - Usage: index.md
+  - Overview: index.md
+  - Using the chart:
+      - Getting started: usage/getting-started.md
+      - Configuration: usage/configuration.md
+      - Backups and imports: usage/backups-and-imports.md
+  - Developing the chart:
+      - Contributing: development/contributing.md
+      - Testing: development/testing.md
