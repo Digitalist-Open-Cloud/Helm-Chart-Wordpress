@@ -22,6 +22,13 @@ jobs:
       - name: Create kind cluster
         uses: helm/kind-action@ef37e7f390d99f746eb8b610417061a60e82a6cc # v1.14.0
 
+      # See tests/kind/fixture-wordpress/Dockerfile for why the chart's own
+      # default image doesn't work as-is for this test.
+      - name: Build and load the e2e fixture WordPress image
+        run: |
+          docker build -t wordpress-e2e-fixture:local tests/kind/fixture-wordpress
+          kind load docker-image wordpress-e2e-fixture:local --name chart-testing
+
       - name: Create namespace
         run: kubectl create namespace wordpress
 
@@ -56,18 +63,14 @@ jobs:
           fi
           echo "wordpress-data PVC is Bound"
 
-      # nginx has no configurable readiness probe in this chart, and the
-      # default wordpress image doesn't ship a bedrock-style app (no
-      # /var/www/html/web), so this only proves the nginx -> php-fpm path is
-      # wired correctly (no 502/503/504), not that a WordPress page renders.
       - name: Smoke test nginx/php-fpm wiring (in-cluster)
         run: |
           kubectl -n wordpress run smoke --rm -i --restart=Never \
             --image=curlimages/curl:8.14.1 --command -- sh -c '
             set -e
-            code=$(curl -sS -o /dev/null -w "%{http_code}" http://wordpress/)
-            echo "ClusterIP response: HTTP $code"
-            case "$code" in 5*) echo "gateway error from nginx to php-fpm"; exit 1 ;; esac
+            body=$(curl -sSf http://wordpress/)
+            echo "ClusterIP response: $body"
+            echo "$body" | grep -q "wordpress e2e fixture ok"
             '
 
       - name: Test routing through ingress-nginx
@@ -76,9 +79,9 @@ jobs:
             --image=curlimages/curl:8.14.1 --command -- sh -c '
             set -e
             HOST=ingress-nginx-controller.ingress-nginx.svc.cluster.local
-            code=$(curl -sS -o /dev/null -w "%{http_code}" -H "Host: wordpress.example.test" "http://$HOST/")
-            echo "Ingress response: HTTP $code"
-            case "$code" in 5*) echo "gateway error via ingress-nginx"; exit 1 ;; esac
+            body=$(curl -sSf -H "Host: wordpress.example.test" "http://$HOST/")
+            echo "Ingress response: $body"
+            echo "$body" | grep -q "wordpress e2e fixture ok"
             '
 
       # ── Phase 2: fileBackup/fileImport against a MinIO fixture ─────────

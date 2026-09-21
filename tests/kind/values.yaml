@@ -2,6 +2,15 @@
 # Points the chart's DB env at the MariaDB fixture (tests/kind/mariadb.yaml)
 # and exercises ingress. tests/kind/values-extras.yaml layers the S3-backed
 # backup/import features on top for phase 2.
+#
+# image.* points at tests/kind/fixture-wordpress, built and `kind load
+# docker-image`-d in the workflow before install - see that Dockerfile for
+# why the chart's own default image doesn't work here.
+image:
+  repository: wordpress-e2e-fixture
+  tag: local
+  pullPolicy: Never
+
 env:
   - name: DB_HOST
     value: wordpress-mariadb
