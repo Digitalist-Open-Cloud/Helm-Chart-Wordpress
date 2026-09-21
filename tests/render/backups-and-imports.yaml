@@ -1,0 +1,25 @@
+# Render combination: the S3-backed backup CronJobs and the db/file import
+# hook Jobs, all switched on together.
+dbBackup:
+  enabled: true
+  schedule: "0 2 * * *"
+  bucket: wordpress-backups
+  retentionDays: 14
+
+fileBackup:
+  enabled: true
+  schedule: "30 2 * * *"
+  bucket: wordpress-backups
+  path: /backup/uploads
+  retentionDays: 5
+
+dbImport:
+  enabled: true
+  bucket: "wordpress-backups/foo/is/bar"
+  path: "uploads"
+  file: "db.sql"
+
+fileImport:
+  enabled: true
+  bucket: wordpress-files
+  path: /var/www/html/web/app/mirror/uploads

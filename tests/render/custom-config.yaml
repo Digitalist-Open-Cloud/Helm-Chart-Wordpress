@@ -1,0 +1,20 @@
+# Render combination: customConfig overrides for every configmap block,
+# plus an externalConfigMap replacing the generated one at mount time.
+customConfig:
+  php_fpm: |
+    [global]
+    daemonize = no
+    [www]
+    listen = 9100
+  php_opcache: |
+    opcache.enable=1
+    opcache.memory_consumption=64
+  php: |
+    memory_limit = 256M
+  nginx_conf: |
+    events {}
+    http {}
+
+externalConfigMap:
+  enabled: true
+  name: my-external-wordpress-config

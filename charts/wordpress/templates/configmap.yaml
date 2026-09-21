@@ -62,7 +62,7 @@ data:
 {{ .Values.customConfig.nginx_conf | indent 4 }}
 {{- else }}
     worker_processes            auto;
-    load_module modules/ngx_http_geoip2_module.so;
+    load_module /usr/lib/nginx/modules/ngx_http_geoip2_module.so;
 
     error_log                   /dev/stderr;
     pid                         /tmp/nginx.pid;

@@ -1,0 +1,1012 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "affinity": {
+      "additionalProperties": true,
+      "description": " additionalProperties: true @schema",
+      "required": [],
+      "title": "affinity"
+    },
+    "autoscaling": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": false,
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "maxReplicas": {
+          "default": 100,
+          "title": "maxReplicas",
+          "type": "integer"
+        },
+        "minReplicas": {
+          "default": 1,
+          "title": "minReplicas",
+          "type": "integer"
+        },
+        "targetCPUUtilizationPercentage": {
+          "default": 80,
+          "title": "targetCPUUtilizationPercentage",
+          "type": "integer"
+        },
+        "targetMemoryUtilizationPercentage": {
+          "default": "",
+          "description": " type: [integer, \"null\"] required: false @schema",
+          "required": [],
+          "title": "targetMemoryUtilizationPercentage",
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [],
+      "title": "autoscaling",
+      "type": "object"
+    },
+    "cavalcade": {
+      "additionalProperties": false,
+      "description": "Add Cavalcade as sidecar, needs the cavalcade plugin in Wordpress.",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "image": {
+          "default": "digitalist/cavalcade-docker:0.2",
+          "title": "image",
+          "type": "string"
+        },
+        "imagePullPolicy": {
+          "default": "Always",
+          "title": "imagePullPolicy",
+          "type": "string"
+        },
+        "resources": {
+          "additionalProperties": false,
+          "properties": {
+            "limits": {
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "default": "200m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "512Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "title": "limits",
+              "type": "object"
+            },
+            "requests": {
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "default": "25m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "64Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "title": "requests",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "resources",
+          "type": "object"
+        }
+      },
+      "required": [],
+      "title": "cavalcade",
+      "type": "object"
+    },
+    "component": {
+      "default": "",
+      "title": "component",
+      "type": "string"
+    },
+    "customConfig": {
+      "additionalProperties": false,
+      "description": " customConfig:   php_fpm: |     [global]     daemonize = no     [www]     listen = 9100",
+      "properties": {
+        "nginx_conf": {
+          "default": "",
+          "title": "nginx_conf",
+          "type": "string"
+        },
+        "php": {
+          "default": "",
+          "title": "php",
+          "type": "string"
+        },
+        "php_fpm": {
+          "default": "",
+          "title": "php_fpm",
+          "type": "string"
+        },
+        "php_opcache": {
+          "default": "",
+          "title": "php_opcache",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "customConfig"
+    },
+    "dbBackup": {
+      "additionalProperties": false,
+      "properties": {
+        "bucket": {
+          "default": "wordpress-backups",
+          "title": "bucket",
+          "type": "string"
+        },
+        "enabled": {
+          "default": false,
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "filenamePrefixOverride": {
+          "default": "",
+          "title": "filenamePrefixOverride",
+          "type": "string"
+        },
+        "retentionDays": {
+          "default": 14,
+          "title": "retentionDays",
+          "type": "integer"
+        },
+        "schedule": {
+          "default": "0 2 * * *",
+          "title": "schedule",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "dbBackup",
+      "type": "object"
+    },
+    "dbImport": {
+      "additionalProperties": false,
+      "description": " ",
+      "properties": {
+        "bucket": {
+          "default": "wordpress-backups/foo/is/bar",
+          "title": "bucket",
+          "type": "string"
+        },
+        "enabled": {
+          "default": false,
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "file": {
+          "default": "db.sql",
+          "title": "file",
+          "type": "string"
+        },
+        "path": {
+          "default": "uploads",
+          "title": "path",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "dbImport"
+    },
+    "dotenv": {
+      "additionalProperties": false,
+      "description": "If enabled, it will mount a secret to a .env file",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "name": {
+          "default": "wordpress",
+          "title": "name",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "dotenv",
+      "type": "object"
+    },
+    "env": {
+      "items": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "default": "DB_HOST",
+                "title": "name",
+                "type": "string"
+              },
+              "value": {
+                "default": "database.default.svc.cluster.local:3306",
+                "title": "value",
+                "type": "string"
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "default": "DB_NAME",
+                "title": "name",
+                "type": "string"
+              },
+              "value": {
+                "default": "db_wordpress",
+                "title": "value",
+                "type": "string"
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "default": "DB_USER",
+                "title": "name",
+                "type": "string"
+              },
+              "value": {
+                "default": "db_wordpress",
+                "title": "value",
+                "type": "string"
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "default": "DB_PASSWORD",
+                "title": "name",
+                "type": "string"
+              },
+              "valueFromSecret": {
+                "additionalProperties": false,
+                "properties": {
+                  "key": {
+                    "default": "password",
+                    "title": "key",
+                    "type": "string"
+                  },
+                  "secretName": {
+                    "default": "mariadb",
+                    "title": "secretName",
+                    "type": "string"
+                  }
+                },
+                "required": [],
+                "title": "valueFromSecret",
+                "type": "object"
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "default": "DB_PREFIX",
+                "title": "name",
+                "type": "string"
+              },
+              "value": {
+                "default": "wp_",
+                "title": "value",
+                "type": "string"
+              }
+            },
+            "required": [],
+            "type": "object"
+          }
+        ],
+        "required": []
+      },
+      "title": "env",
+      "type": "array"
+    },
+    "externalConfigMap": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": false,
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "name": {
+          "default": "",
+          "title": "name",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "externalConfigMap",
+      "type": "object"
+    },
+    "extraConfigMap": {
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "default": false,
+          "title": "create",
+          "type": "boolean"
+        },
+        "data": {
+          "additionalProperties": true,
+          "description": " additionalProperties: true @schema",
+          "required": [],
+          "title": "data"
+        }
+      },
+      "required": [],
+      "title": "extraConfigMap",
+      "type": "object"
+    },
+    "extraSecrets": {
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "default": false,
+          "title": "create",
+          "type": "boolean"
+        },
+        "data": {
+          "additionalProperties": true,
+          "description": " additionalProperties: true @schema",
+          "required": [],
+          "title": "data"
+        }
+      },
+      "required": [],
+      "title": "extraSecrets",
+      "type": "object"
+    },
+    "extraVolumeMounts": {
+      "description": " - name: mySecretVolume   secret:     secretName: wordpress-extra-secrets - name: my.file   configMap:     name: wordpress-extra-config-map     items:     - key: \"my.file\"       path: \"/tmp/my.file\"",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "extraVolumeMounts"
+    },
+    "extraVolumes": {
+      "items": {
+        "required": []
+      },
+      "title": "extraVolumes",
+      "type": "array"
+    },
+    "fileBackup": {
+      "additionalProperties": false,
+      "properties": {
+        "backupNamePrefixOverride": {
+          "default": "",
+          "title": "backupNamePrefixOverride",
+          "type": "string"
+        },
+        "bucket": {
+          "default": "wordpress-backups",
+          "title": "bucket",
+          "type": "string"
+        },
+        "enabled": {
+          "default": false,
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "path": {
+          "default": "/backup/uploads",
+          "title": "path",
+          "type": "string"
+        },
+        "retentionDays": {
+          "default": 5,
+          "title": "retentionDays",
+          "type": "integer"
+        },
+        "schedule": {
+          "default": "30 2 * * *",
+          "title": "schedule",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "fileBackup",
+      "type": "object"
+    },
+    "fileImport": {
+      "additionalProperties": false,
+      "description": " ",
+      "properties": {
+        "bucket": {
+          "default": "wordpress-files",
+          "title": "bucket",
+          "type": "string"
+        },
+        "enabled": {
+          "default": false,
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "path": {
+          "default": "/var/www/html/web/app/mirror/uploads",
+          "title": "path",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "fileImport"
+    },
+    "fullnameOverride": {
+      "default": "",
+      "title": "fullnameOverride",
+      "type": "string"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "helperImage": {
+      "default": "alpine:3.22",
+      "title": "helperImage",
+      "type": "string"
+    },
+    "image": {
+      "additionalProperties": false,
+      "properties": {
+        "pullPolicy": {
+          "default": "Always",
+          "title": "pullPolicy",
+          "type": "string"
+        },
+        "repository": {
+          "default": "wordpress",
+          "title": "repository",
+          "type": "string"
+        },
+        "tag": {
+          "default": "5.7-php7.4-fpm-alpine",
+          "title": "tag",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "image",
+      "type": "object"
+    },
+    "imagePullSecrets": {
+      "description": " # imagePullSecrets: #   - name: myRegistryKeySecretName #",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "imagePullSecrets"
+    },
+    "ingress": {
+      "additionalProperties": false,
+      "properties": {
+        "annotations": {
+          "additionalProperties": true,
+          "description": " additionalProperties: true @schema",
+          "required": [],
+          "title": "annotations"
+        },
+        "enabled": {
+          "default": false,
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "hosts": {
+          "description": " kubernetes.io/tls-acme: \"true\"",
+          "items": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "host": {
+                    "default": "chart-example.local",
+                    "title": "host",
+                    "type": "string"
+                  },
+                  "paths": {
+                    "items": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "path": {
+                              "default": "/",
+                              "title": "path",
+                              "type": "string"
+                            },
+                            "pathType": {
+                              "default": "Prefix",
+                              "title": "pathType",
+                              "type": "string"
+                            }
+                          },
+                          "required": [],
+                          "type": "object"
+                        }
+                      ],
+                      "required": []
+                    },
+                    "title": "paths",
+                    "type": "array"
+                  }
+                },
+                "required": [],
+                "type": "object"
+              }
+            ],
+            "required": []
+          },
+          "required": [],
+          "title": "hosts"
+        },
+        "ingressClassName": {
+          "default": "nginx",
+          "title": "ingressClassName",
+          "type": "string"
+        },
+        "tls": {
+          "items": {
+            "required": []
+          },
+          "title": "tls",
+          "type": "array"
+        }
+      },
+      "required": [],
+      "title": "ingress",
+      "type": "object"
+    },
+    "minioClientDownload": {
+      "default": "https://dl.min.io/aistor/mc/release/linux-amd64/mc",
+      "title": "minioClientDownload",
+      "type": "string"
+    },
+    "nameOverride": {
+      "default": "",
+      "title": "nameOverride",
+      "type": "string"
+    },
+    "nginx": {
+      "additionalProperties": false,
+      "properties": {
+        "pullPolicy": {
+          "default": "Always",
+          "title": "pullPolicy",
+          "type": "string"
+        },
+        "repository": {
+          "default": "digitalist/nginx",
+          "title": "repository",
+          "type": "string"
+        },
+        "resources": {
+          "additionalProperties": false,
+          "properties": {
+            "limits": {
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "default": "200m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "256Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "title": "limits",
+              "type": "object"
+            },
+            "requests": {
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "default": "10m",
+                  "title": "cpu",
+                  "type": "string"
+                },
+                "memory": {
+                  "default": "20Mi",
+                  "title": "memory",
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "title": "requests",
+              "type": "object"
+            }
+          },
+          "required": [],
+          "title": "resources",
+          "type": "object"
+        },
+        "securityContext": {
+          "additionalProperties": false,
+          "properties": {
+            "allowPrivilegeEscalation": {
+              "default": false,
+              "title": "allowPrivilegeEscalation",
+              "type": "boolean"
+            },
+            "capabilities": {
+              "additionalProperties": false,
+              "properties": {
+                "drop": {
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      }
+                    ],
+                    "required": []
+                  },
+                  "title": "drop",
+                  "type": "array"
+                }
+              },
+              "required": [],
+              "title": "capabilities",
+              "type": "object"
+            },
+            "privileged": {
+              "default": false,
+              "title": "privileged",
+              "type": "boolean"
+            },
+            "runAsUser": {
+              "default": 65532,
+              "description": "Uid of the digitalist/nginx image's own nonroot user, which owns its pre-created /var/lib/nginx directories; other uids get a Permission denied error there.",
+              "title": "runAsUser",
+              "type": "integer"
+            }
+          },
+          "required": [],
+          "title": "securityContext",
+          "type": "object"
+        },
+        "stripPrefixes": {
+          "description": " want to strip /mysite/ from request, so you get /foo instead you add: stripPrefixes:   - mysite This is useful if you are using sub paths for you domain and targeting different wordpress pods.",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "stripPrefixes"
+        },
+        "tag": {
+          "default": "1.31.6",
+          "title": "tag",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "nginx",
+      "type": "object"
+    },
+    "nodeSelector": {
+      "additionalProperties": true,
+      "description": " additionalProperties: true @schema",
+      "required": [],
+      "title": "nodeSelector"
+    },
+    "podAnnotations": {
+      "additionalProperties": true,
+      "description": " additionalProperties: true @schema",
+      "required": [],
+      "title": "podAnnotations"
+    },
+    "podSecurityContext": {
+      "additionalProperties": false,
+      "properties": {
+        "fsGroup": {
+          "default": 82,
+          "title": "fsGroup",
+          "type": "integer"
+        },
+        "runAsGroup": {
+          "default": 82,
+          "title": "runAsGroup",
+          "type": "integer"
+        },
+        "runAsNonRoot": {
+          "default": true,
+          "title": "runAsNonRoot",
+          "type": "boolean"
+        },
+        "runAsUser": {
+          "default": 82,
+          "title": "runAsUser",
+          "type": "integer"
+        },
+        "seccompProfile": {
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "default": "RuntimeDefault",
+              "title": "type",
+              "type": "string"
+            }
+          },
+          "required": [],
+          "title": "seccompProfile",
+          "type": "object"
+        }
+      },
+      "required": [],
+      "title": "podSecurityContext",
+      "type": "object"
+    },
+    "replicaCount": {
+      "default": 1,
+      "title": "replicaCount",
+      "type": "integer"
+    },
+    "resources": {
+      "additionalProperties": false,
+      "properties": {
+        "limits": {
+          "additionalProperties": false,
+          "properties": {
+            "cpu": {
+              "default": "200m",
+              "title": "cpu",
+              "type": "string"
+            },
+            "memory": {
+              "default": "256Mi",
+              "title": "memory",
+              "type": "string"
+            }
+          },
+          "required": [],
+          "title": "limits",
+          "type": "object"
+        },
+        "requests": {
+          "additionalProperties": false,
+          "properties": {
+            "cpu": {
+              "default": "25m",
+              "title": "cpu",
+              "type": "string"
+            },
+            "memory": {
+              "default": "64Mi",
+              "title": "memory",
+              "type": "string"
+            }
+          },
+          "required": [],
+          "title": "requests",
+          "type": "object"
+        }
+      },
+      "required": [],
+      "title": "resources",
+      "type": "object"
+    },
+    "rolloutStrategy": {
+      "default": "Recreate",
+      "title": "rolloutStrategy",
+      "type": "string"
+    },
+    "securityContext": {
+      "additionalProperties": false,
+      "properties": {
+        "allowPrivilegeEscalation": {
+          "default": false,
+          "title": "allowPrivilegeEscalation",
+          "type": "boolean"
+        },
+        "capabilities": {
+          "additionalProperties": false,
+          "properties": {
+            "drop": {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  }
+                ],
+                "required": []
+              },
+              "title": "drop",
+              "type": "array"
+            }
+          },
+          "required": [],
+          "title": "capabilities",
+          "type": "object"
+        },
+        "privileged": {
+          "default": false,
+          "title": "privileged",
+          "type": "boolean"
+        }
+      },
+      "required": [],
+      "title": "securityContext",
+      "type": "object"
+    },
+    "service": {
+      "additionalProperties": false,
+      "properties": {
+        "port": {
+          "default": 80,
+          "title": "port",
+          "type": "integer"
+        },
+        "type": {
+          "default": "ClusterIP",
+          "title": "type",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "service",
+      "type": "object"
+    },
+    "serviceAccount": {
+      "additionalProperties": false,
+      "properties": {
+        "annotations": {
+          "additionalProperties": true,
+          "description": " @schema additionalProperties: true @schema",
+          "required": [],
+          "title": "annotations"
+        },
+        "create": {
+          "default": true,
+          "description": "Specifies whether a service account should be created",
+          "title": "create",
+          "type": "boolean"
+        },
+        "name": {
+          "default": "",
+          "description": " If not set and create is true, a name is generated using the fullname template",
+          "required": [],
+          "title": "name"
+        }
+      },
+      "required": [],
+      "title": "serviceAccount",
+      "type": "object"
+    },
+    "sidecars": {
+      "description": "# Add sidecars you want to use.",
+      "items": {
+        "required": []
+      },
+      "title": "sidecars",
+      "type": "array"
+    },
+    "tolerations": {
+      "items": {
+        "required": []
+      },
+      "title": "tolerations",
+      "type": "array"
+    },
+    "wordpress": {
+      "additionalProperties": false,
+      "properties": {
+        "livenessProbe": {
+          "description": "   httpGet:     path: /ping     port: 8080   initialDelaySeconds: 30   periodSeconds: 10   timeoutSeconds: 2   failureThreshold: 3",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "livenessProbe"
+        },
+        "persistence": {
+          "additionalProperties": false,
+          "description": " # ref: http://kubernetes.io/docs/user-guide/persistent-volumes/ #",
+          "properties": {
+            "accessMode": {
+              "default": "ReadWriteOnce",
+              "title": "accessMode",
+              "type": "string"
+            },
+            "annotations": {
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
+              "required": [],
+              "title": "annotations"
+            },
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "existingClaim": {
+              "default": "",
+              "description": " # If you want to reuse an existing claim, you can pass the name of the PVC using # the existingClaim variable @schema type: [string, \"null\"] required: false @schema",
+              "required": [],
+              "title": "existingClaim",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "labels": {
+              "additionalProperties": true,
+              "description": " additionalProperties: true @schema",
+              "required": [],
+              "title": "labels"
+            },
+            "size": {
+              "default": "10Gi",
+              "title": "size",
+              "type": "string"
+            },
+            "storageClass": {
+              "default": "-",
+              "description": " # If defined, storageClassName: \u003cstorageClass\u003e # If set to \"-\", storageClassName: \"\", which disables dynamic provisioning # If undefined (the default) or set to null, no storageClassName spec is #   set, choosing the default provisioner.  (gp2 on AWS, standard on #   GKE, AWS \u0026 OpenStack) #",
+              "required": [],
+              "title": "storageClass"
+            }
+          },
+          "required": [],
+          "title": "persistence"
+        },
+        "readinessProbe": {
+          "description": "   httpGet:     path: /status     port: 8080   initialDelaySeconds: 10   periodSeconds: 5   timeoutSeconds: 2   failureThreshold: 3",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "readinessProbe"
+        }
+      },
+      "required": [],
+      "title": "wordpress",
+      "type": "object"
+    },
+    "wordpressEnvs": {
+      "additionalProperties": true,
+      "description": " This mounts into '/var/www/html/config/environments/staging.php' if you name it staging. wordpressEnvs:   staging: |     \u003c?php define('WP_ENV', 'staging');     define('WP_DEBUG', true); @schema additionalProperties: true @schema",
+      "required": [],
+      "title": "wordpressEnvs"
+    }
+  },
+  "required": [],
+  "type": "object"
+}

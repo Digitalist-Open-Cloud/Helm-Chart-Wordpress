@@ -1,0 +1,114 @@
+name: E2E (kind)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: Install chart on kind
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+
+      - name: Create kind cluster
+        uses: helm/kind-action@ef37e7f390d99f746eb8b610417061a60e82a6cc # v1.14.0
+
+      # See tests/kind/fixture-wordpress/Dockerfile for why the chart's own
+      # default image doesn't work as-is for this test.
+      - name: Build and load the e2e fixture WordPress image
+        run: |
+          docker build -t wordpress-e2e-fixture:local tests/kind/fixture-wordpress
+          kind load docker-image wordpress-e2e-fixture:local --name chart-testing
+
+      - name: Create namespace
+        run: kubectl create namespace wordpress
+
+      # ── Database fixture ────────────────────────────────────────────────
+      - name: Install MariaDB
+        run: |
+          kubectl apply -f tests/kind/mariadb.yaml
+          kubectl -n wordpress rollout status deployment/wordpress-mariadb --timeout=300s
+
+      # ── Ingress infrastructure (ingress-nginx) ─────────────────────────
+      - name: Install ingress-nginx
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.15.1/deploy/static/provider/cloud/deploy.yaml
+          kubectl -n ingress-nginx rollout status deployment/ingress-nginx-controller --timeout=300s
+
+      # ── Install (ingress, no S3-backed features) ────────────────────────
+      - name: Install WordPress chart
+        run: |
+          helm install wordpress charts/wordpress --namespace wordpress \
+            --values tests/kind/values.yaml
+
+      - name: Wait for WordPress rollout
+        run: kubectl -n wordpress rollout status deployment/wordpress --timeout=300s
+
+      - name: Verify PVC bound
+        run: |
+          phase=$(kubectl -n wordpress get pvc wordpress-data -o jsonpath='{.status.phase}')
+          if [ "$phase" != "Bound" ]; then
+            echo "::error::wordpress-data PVC is not Bound (phase=$phase)"
+            kubectl -n wordpress describe pvc wordpress-data
+            exit 1
+          fi
+          echo "wordpress-data PVC is Bound"
+
+      - name: Smoke test nginx/php-fpm wiring (in-cluster)
+        run: |
+          kubectl -n wordpress run smoke --rm -i --restart=Never \
+            --image=curlimages/curl:8.14.1 --command -- sh -c '
+            set -e
+            body=$(curl -sSf http://wordpress/)
+            echo "ClusterIP response: $body"
+            echo "$body" | grep -q "wordpress e2e fixture ok"
+            '
+
+      - name: Test routing through ingress-nginx
+        run: |
+          kubectl -n wordpress run ingress-smoke --rm -i --restart=Never \
+            --image=curlimages/curl:8.14.1 --command -- sh -c '
+            set -e
+            HOST=ingress-nginx-controller.ingress-nginx.svc.cluster.local
+            body=$(curl -sSf -H "Host: wordpress.example.test" "http://$HOST/")
+            echo "Ingress response: $body"
+            echo "$body" | grep -q "wordpress e2e fixture ok"
+            '
+
+      # dbBackup/fileBackup/dbImport/fileImport (S3-backed) are not exercised
+      # here - live S3 integration testing was dropped for being too
+      # complicated (deprecated MinIO images, then OOMKilling on the
+      # replacement) and will come back once a real S3 bucket is available
+      # for the e2e test to target. Structural coverage (the chart renders
+      # valid manifests with these enabled) still lives in
+      # tests/render/backups-and-imports.yaml.
+
+      - name: Diagnostics on failure
+        if: failure()
+        run: |
+          echo "::group::resources"
+          kubectl get all -n wordpress || true
+          kubectl -n wordpress get events --sort-by=.lastTimestamp | tail -n 50 || true
+          kubectl -n wordpress get ingress,pvc,cronjob,job -o wide || true
+          echo "::endgroup::"
+          echo "::group::pod status overview"
+          kubectl -n wordpress get pods -o wide || true
+          echo "::endgroup::"
+          for p in $(kubectl -n wordpress get pods -o name); do
+            echo "::group::$p"
+            kubectl -n wordpress describe "$p" | tail -n 60 || true
+            echo "--- current logs ---"
+            kubectl -n wordpress logs "$p" --all-containers --tail=200 || true
+            echo "--- previous logs (last container instance, in case of crash loop) ---"
+            kubectl -n wordpress logs "$p" --all-containers --previous --tail=200 2>/dev/null || true
+            echo "::endgroup::"
+          done

@@ -1,0 +1,22 @@
+# Render combination: optional components switched off, and persistence
+# pointed at an existing claim instead of a chart-managed PVC.
+wordpress:
+  persistence:
+    enabled: true
+    existingClaim: my-existing-wordpress-data
+
+serviceAccount:
+  create: false
+  name: default
+
+ingress:
+  enabled: false
+
+autoscaling:
+  enabled: false
+
+extraSecrets:
+  create: false
+
+extraConfigMap:
+  create: false

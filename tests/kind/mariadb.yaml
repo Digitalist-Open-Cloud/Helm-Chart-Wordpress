@@ -1,0 +1,85 @@
+# MariaDB fixture for the kind-based e2e test.
+# Names match tests/kind/values.yaml's env overrides: service wordpress-mariadb,
+# secret wordpress-mariadb with key password.
+# CI fixture only - not for production use.
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wordpress-mariadb
+  namespace: wordpress
+type: Opaque
+stringData:
+  password: wordpress-ci-password
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress-mariadb
+  namespace: wordpress
+  labels:
+    app: wordpress-mariadb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress-mariadb
+  template:
+    metadata:
+      labels:
+        app: wordpress-mariadb
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: mariadb
+          image: mariadb:11.4
+          env:
+            - name: MARIADB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wordpress-mariadb
+                  key: password
+            - name: MARIADB_DATABASE
+              value: wordpress
+          ports:
+            - containerPort: 3306
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          readinessProbe:
+            exec:
+              command:
+                - healthcheck.sh
+                - --connect
+                - --innodb_initialized
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 3306
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-mariadb
+  namespace: wordpress
+  labels:
+    app: wordpress-mariadb
+spec:
+  ports:
+    - port: 3306
+      protocol: TCP
+  selector:
+    app: wordpress-mariadb

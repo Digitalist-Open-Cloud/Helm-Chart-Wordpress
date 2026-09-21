@@ -9,8 +9,7 @@ image:
 nginx:
   repository: digitalist/nginx
   pullPolicy: Always
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: 1.21.6
+  tag: 1.31.6
   resources:
     limits:
       cpu: 200m
@@ -26,9 +25,16 @@ nginx:
   # different wordpress pods.
   stripPrefixes: []
   securityContext:
-    runAsUser: 100
+    # @schema
+    # type: integer
+    # @schema
+    # -- Uid of the digitalist/nginx image's own nonroot user, which owns its pre-created /var/lib/nginx directories; other uids get a Permission denied error there.
+    runAsUser: 65532
     privileged: false
     allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
 
 env:
   - name: DB_HOST
@@ -55,11 +61,17 @@ serviceAccount:
   # Specifies whether a service account should be created
   create: true
   # Annotations to add to the service account
+  # @schema
+  # additionalProperties: true
+  # @schema
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+# @schema
+# additionalProperties: true
+# @schema
 podAnnotations: {}
 
 podSecurityContext:
@@ -67,6 +79,8 @@ podSecurityContext:
   runAsUser: 82
   runAsGroup: 82
   fsGroup: 82
+  seccompProfile:
+    type: RuntimeDefault
 
 securityContext:
   allowPrivilegeEscalation: false
@@ -85,6 +99,9 @@ service:
 ingress:
   enabled: false
   ingressClassName: nginx
+  # @schema
+  # additionalProperties: true
+  # @schema
   annotations:
     {}
     # kubernetes.io/ingress.class: nginx
@@ -111,12 +128,22 @@ autoscaling:
   minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+  # @schema
+  # type: [integer, "null"]
+  # required: false
+  # @schema
+  targetMemoryUtilizationPercentage:
 
+# @schema
+# additionalProperties: true
+# @schema
 nodeSelector: {}
 
 tolerations: []
 
+# @schema
+# additionalProperties: true
+# @schema
 affinity: {}
 
 wordpress:
@@ -136,10 +163,20 @@ wordpress:
     ##
     ## If you want to reuse an existing claim, you can pass the name of the PVC using
     ## the existingClaim variable
-    # existingClaim: your-claim
+    # @schema
+    # type: [string, "null"]
+    # required: false
+    # @schema
+    existingClaim:
     accessMode: ReadWriteOnce
     size: 10Gi
+    # @schema
+    # additionalProperties: true
+    # @schema
     annotations: {}
+    # @schema
+    # additionalProperties: true
+    # @schema
     labels: {}
   # livenessProbe:
   #   httpGet:
@@ -165,6 +202,9 @@ sidecars:
   []
 extraSecrets:
   create: false
+  # @schema
+  # additionalProperties: true
+  # @schema
   data: {}
 # secrets need to base64 encoded when added.
 #  data:
@@ -173,6 +213,9 @@ extraSecrets:
 
 extraConfigMap:
   create: false
+  # @schema
+  # additionalProperties: true
+  # @schema
   data: {}
   # You can create an extra config map, and attach data to it. This will be named
   # {{ include "wordpress.fullname" . }}-extra-config-map
@@ -241,6 +284,9 @@ cavalcade:
 #   staging: |
 #     <?php define('WP_ENV', 'staging');
 #     define('WP_DEBUG', true);
+# @schema
+# additionalProperties: true
+# @schema
 wordpressEnvs: {}
 
 # Import files from a backup.

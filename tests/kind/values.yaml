@@ -1,0 +1,69 @@
+# Values for the kind-based e2e test (.github/workflows/kind-e2e.yaml).
+# Points the chart's DB env at the MariaDB fixture (tests/kind/mariadb.yaml)
+# and exercises ingress. The S3-backed backup/import features (dbBackup,
+# fileBackup, dbImport, fileImport) are not exercised here - see the note in
+# kind-e2e.yaml.
+#
+# image.* points at tests/kind/fixture-wordpress, built and `kind load
+# docker-image`-d in the workflow before install - see that Dockerfile for
+# why the chart's own default image doesn't work here.
+image:
+  repository: wordpress-e2e-fixture
+  tag: local
+  pullPolicy: Never
+
+env:
+  - name: DB_HOST
+    value: wordpress-mariadb
+  - name: DB_NAME
+    value: wordpress
+  - name: DB_USER
+    value: root
+  - name: DB_PASSWORD
+    valueFromSecret:
+      secretName: wordpress-mariadb
+      key: password
+  - name: DB_PREFIX
+    value: wp_
+
+# No default probe ships with the chart (opt-in); a TCP check on the
+# php-fpm port gives the e2e rollout wait something real to gate on.
+wordpress:
+  readinessProbe:
+    tcpSocket:
+      port: 9000
+    initialDelaySeconds: 5
+    periodSeconds: 5
+  persistence:
+    # The chart's own default ("-") renders storageClassName: "" on the PVC,
+    # which is meant for clusters with a manually pre-provisioned PV and
+    # never binds on a fresh cluster with no matching PV. Clearing it here
+    # omits storageClassName entirely, so kind's default StorageClass
+    # (local-path-provisioner) dynamically provisions it instead.
+    storageClass: ""
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+nginx:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  hosts:
+    - host: wordpress.example.test
+      paths:
+        - path: /
+          pathType: Prefix

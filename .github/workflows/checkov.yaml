@@ -1,0 +1,42 @@
+name: Checkov
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checkov:
+    name: Checkov scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # for actions/checkout to fetch code
+      security-events: write # for upload-sarif to push results to the Security tab
+      actions: read # required for upload-sarif on private repositories
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+
+      - name: Run Checkov
+        id: checkov
+        uses: bridgecrewio/checkov-action@7b972723c44fb3d256283fac96fae5d7c1894bb7 # master 2026-07-09, checkov v3.3.8
+        with:
+          directory: charts/wordpress
+          framework: helm
+          config_file: charts/wordpress/.checkov.yaml
+          quiet: true # display only failed checks
+          soft_fail: false # fail the build on findings
+          output_format: cli,sarif
+          output_file_path: console,results.sarif
+
+      - name: Upload SARIF file
+        # run even when the scan step failed, so findings reach the Security tab
+        if: success() || failure()
+        uses: github/codeql-action/upload-sarif@99df26d4f13ea111d4ec1a7dddef6063f76b97e9 # main 2026-07-08, upload-sarif v4.37.0
+        with:
+          sarif_file: results.sarif
