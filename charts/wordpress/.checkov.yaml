@@ -43,3 +43,11 @@ skip-check:
   # NetworkPolicy: this chart does not ship a NetworkPolicy resource; that's
   # left to the cluster/platform's own network policy tooling.
   - CKV2_K8S_6
+  # Default namespace: every resource sets metadata.namespace to
+  # {{ .Release.Namespace }}, which a real `helm install --namespace X`
+  # correctly resolves to X. Checkov's helm renderer has no bound release
+  # namespace though (no --namespace passed, no kube context in the CI
+  # runner), so `helm template` falls back to the literal string "default"
+  # for every resource - a static-scan artifact, not an actual default
+  # namespace install.
+  - CKV_K8S_21
