@@ -3,6 +3,7 @@
 ## Repository layout
 
 ```
+Dockerfile                 # real Bedrock WordPress build (WP-CLI + MariaDB client) used by the kind e2e test
 charts/wordpress/
   Chart.yaml            # name, version, appVersion
   values.yaml            # all defaults, documented with helm-docs/helm-schema comment conventions
