@@ -116,7 +116,7 @@ A Helm chart to deploy WordPress in Kubernetes
 | serviceAccount.name | string | `""` |  |
 | sidecars | list | `[]` |  |
 | tolerations | list | `[]` |  |
-| wordpress.livenessProbe | list | `[]` |  |
+| wordpress.livenessProbe | object | `{}` |  |
 | wordpress.persistence.accessMode | string | `"ReadWriteOnce"` |  |
 | wordpress.persistence.annotations | object | `{}` |  |
 | wordpress.persistence.enabled | bool | `true` |  |
@@ -124,7 +124,7 @@ A Helm chart to deploy WordPress in Kubernetes
 | wordpress.persistence.labels | object | `{}` |  |
 | wordpress.persistence.size | string | `"10Gi"` |  |
 | wordpress.persistence.storageClass | string | `"-"` |  |
-| wordpress.readinessProbe | list | `[]` |  |
+| wordpress.readinessProbe | object | `{}` |  |
 | wordpressEnvs | object | `{}` |  |
 
 ----------------------------------------------

@@ -186,7 +186,10 @@ wordpress:
   #   periodSeconds: 10
   #   timeoutSeconds: 2
   #   failureThreshold: 3
-  livenessProbe: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  livenessProbe: {}
   # readinessProbe:
   #   httpGet:
   #     path: /status
@@ -195,7 +198,10 @@ wordpress:
   #   periodSeconds: 5
   #   timeoutSeconds: 2
   #   failureThreshold: 3
-  readinessProbe: []
+  # @schema
+  # additionalProperties: true
+  # @schema
+  readinessProbe: {}
 
 ## Add sidecars you want to use.
 sidecars:

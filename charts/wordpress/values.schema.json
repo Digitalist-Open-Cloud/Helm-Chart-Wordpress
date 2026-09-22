@@ -937,10 +937,8 @@
       "additionalProperties": false,
       "properties": {
         "livenessProbe": {
-          "description": "   httpGet:     path: /ping     port: 8080   initialDelaySeconds: 30   periodSeconds: 10   timeoutSeconds: 2   failureThreshold: 3",
-          "items": {
-            "required": []
-          },
+          "additionalProperties": true,
+          "description": "   httpGet:     path: /ping     port: 8080   initialDelaySeconds: 30   periodSeconds: 10   timeoutSeconds: 2   failureThreshold: 3 @schema additionalProperties: true @schema",
           "required": [],
           "title": "livenessProbe"
         },
@@ -996,10 +994,8 @@
           "title": "persistence"
         },
         "readinessProbe": {
-          "description": "   httpGet:     path: /status     port: 8080   initialDelaySeconds: 10   periodSeconds: 5   timeoutSeconds: 2   failureThreshold: 3",
-          "items": {
-            "required": []
-          },
+          "additionalProperties": true,
+          "description": "   httpGet:     path: /status     port: 8080   initialDelaySeconds: 10   periodSeconds: 5   timeoutSeconds: 2   failureThreshold: 3 @schema additionalProperties: true @schema",
           "required": [],
           "title": "readinessProbe"
         }
