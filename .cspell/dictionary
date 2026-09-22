@@ -1,5 +1,6 @@
 arto
 bridgecrewio
+buildx
 cstorage
 curlimages
 digitalist
@@ -36,6 +37,7 @@ sarif
 SARIF
 scgi
 sendfile
+SITEURL
 subchart
 subpaths
 techdocs

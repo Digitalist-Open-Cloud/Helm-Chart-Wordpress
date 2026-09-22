@@ -13,6 +13,8 @@ If you also use [`dbBackup` or `dbImport`](backups-and-imports.md#dbbackupdbimpo
 
 The chart's own default (`image.repository: wordpress`, the official Docker Hub image) does **not** meet any of this - it's a placeholder. Point `image` at your own image before installing.
 
+The repo-root [`Dockerfile`](https://github.com/Digitalist-Open-Cloud/Helm-Chart-Wordpress/blob/main/Dockerfile) is a real, working example that meets all of the above (built with `composer create-project roots/bedrock`, plus WP-CLI and a MariaDB client) - not meant for production, but a concrete reference for what this chart actually needs from an image. See [Testing](../development/testing.md#live-cluster-kind-e2eyaml) for how it's used.
+
 ## Database
 
 The chart has no `db.*` values block; you configure the database purely through `env`, using the container's actual env var names:
@@ -36,6 +38,16 @@ env:
 Each entry is either a plain `value`, or a `valueFromSecret` (`secretName` + `key`), which becomes a `secretKeyRef`. The Secret referenced by `valueFromSecret` must already exist - this chart never creates database Secrets.
 
 This same `env` list is reused verbatim by every CronJob/Job the chart creates (`dbBackup`, `dbImport`, `extraCronJobs`), so changing it here changes the database credentials everywhere consistently.
+
+!!! note "Bedrock also needs `WP_HOME`/`WP_SITEURL`"
+    A stock Bedrock `config/application.php` requires `WP_HOME` and `WP_SITEURL` to be set (it defines the `WP_HOME`/`WP_SITEURL` constants directly from `env('WP_HOME')`/`env('WP_SITEURL')`, with no chart-provided default) - add them to `env` alongside the `DB_*` vars:
+
+    ```yaml
+    - name: WP_HOME
+      value: https://example.com
+    - name: WP_SITEURL
+      value: https://example.com/wp
+    ```
 
 ## Security context and uids
 

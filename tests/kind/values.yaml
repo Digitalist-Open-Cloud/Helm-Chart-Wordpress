@@ -4,11 +4,12 @@
 # fileBackup, dbImport, fileImport) are not exercised here - see the note in
 # kind-e2e.yaml.
 #
-# image.* points at tests/kind/fixture-wordpress, built and `kind load
-# docker-image`-d in the workflow before install - see that Dockerfile for
-# why the chart's own default image doesn't work here.
+# image.* points at the repo-root Dockerfile (a real Bedrock WordPress build
+# with WP-CLI and a MariaDB client), built and `kind load docker-image`-d in
+# the workflow before install - see that Dockerfile for why the chart's own
+# default image doesn't work here.
 image:
-  repository: wordpress-e2e-fixture
+  repository: wordpress-bedrock-test
   tag: local
   pullPolicy: Never
 
@@ -25,6 +26,13 @@ env:
       key: password
   - name: DB_PREFIX
     value: wp_
+  # Bedrock's config/application.php requires these two - see
+  # docs/usage/configuration.md#database. Kept in sync with
+  # ingress.hosts[0].host below.
+  - name: WP_HOME
+    value: http://wordpress.example.test
+  - name: WP_SITEURL
+    value: http://wordpress.example.test/wp
 
 # No default probe ships with the chart (opt-in); a TCP check on the
 # php-fpm port gives the e2e rollout wait something real to gate on.

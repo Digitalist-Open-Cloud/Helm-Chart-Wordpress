@@ -22,12 +22,25 @@ jobs:
       - name: Create kind cluster
         uses: helm/kind-action@ef37e7f390d99f746eb8b610417061a60e82a6cc # v1.14.0
 
-      # See tests/kind/fixture-wordpress/Dockerfile for why the chart's own
-      # default image doesn't work as-is for this test.
-      - name: Build and load the e2e fixture WordPress image
-        run: |
-          docker build -t wordpress-e2e-fixture:local tests/kind/fixture-wordpress
-          kind load docker-image wordpress-e2e-fixture:local --name chart-testing
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      # See ../../Dockerfile for what this is and why the chart's own
+      # default image doesn't work as-is for this test. Built with the GitHub
+      # Actions cache (composer/apk steps are network-heavy) and loaded
+      # straight into the docker daemon so kind can pick it up.
+      - name: Build the e2e fixture WordPress image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          tags: wordpress-bedrock-test:local
+          push: false
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Load the e2e fixture image into kind
+        run: kind load docker-image wordpress-bedrock-test:local --name chart-testing
 
       - name: Create namespace
         run: kubectl create namespace wordpress
@@ -63,14 +76,19 @@ jobs:
           fi
           echo "wordpress-data PVC is Bound"
 
+      # A fresh install with an empty database redirects "/" to the WP
+      # installer - real WordPress/Bedrock behavior (nginx -> php-fpm ->
+      # WordPress -> MariaDB all actually working), not a fixture string.
       - name: Smoke test nginx/php-fpm wiring (in-cluster)
         run: |
           kubectl -n wordpress run smoke --rm -i --restart=Never \
             --image=curlimages/curl:8.14.1 --command -- sh -c '
             set -e
-            body=$(curl -sSf http://wordpress/)
-            echo "ClusterIP response: $body"
-            echo "$body" | grep -q "wordpress e2e fixture ok"
+            headers=$(curl -sS -o /dev/null -D - http://wordpress/)
+            echo "ClusterIP response headers:"
+            echo "$headers"
+            echo "$headers" | grep -qi "^HTTP/.* 302"
+            echo "$headers" | grep -qi "^Location:.*wp-admin/install.php"
             '
 
       - name: Test routing through ingress-nginx
@@ -79,9 +97,11 @@ jobs:
             --image=curlimages/curl:8.14.1 --command -- sh -c '
             set -e
             HOST=ingress-nginx-controller.ingress-nginx.svc.cluster.local
-            body=$(curl -sSf -H "Host: wordpress.example.test" "http://$HOST/")
-            echo "Ingress response: $body"
-            echo "$body" | grep -q "wordpress e2e fixture ok"
+            headers=$(curl -sS -o /dev/null -D - -H "Host: wordpress.example.test" "http://$HOST/")
+            echo "Ingress response headers:"
+            echo "$headers"
+            echo "$headers" | grep -qi "^HTTP/.* 302"
+            echo "$headers" | grep -qi "^Location:.*wp-admin/install.php"
             '
 
       # dbBackup/fileBackup/dbImport/fileImport (S3-backed) are not exercised
