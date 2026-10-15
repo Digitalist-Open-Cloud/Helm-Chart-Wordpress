@@ -720,7 +720,7 @@
           "title": "stripPrefixes"
         },
         "tag": {
-          "default": "1.31.6",
+          "default": "1.31.6-6",
           "title": "tag",
           "type": "string"
         }

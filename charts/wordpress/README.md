@@ -92,7 +92,7 @@ A Helm chart to deploy WordPress in Kubernetes
 | nginx.securityContext.privileged | bool | `false` |  |
 | nginx.securityContext.runAsUser | int | `65532` | Uid of the digitalist/nginx image's own nonroot user, which owns its pre-created /var/lib/nginx directories; other uids get a Permission denied error there. |
 | nginx.stripPrefixes | list | `[]` |  |
-| nginx.tag | string | `"1.31.6"` |  |
+| nginx.tag | string | `"1.31.6-6"` |  |
 | nodeSelector | object | `{}` |  |
 | podAnnotations | object | `{}` |  |
 | podSecurityContext.fsGroup | int | `82` |  |
