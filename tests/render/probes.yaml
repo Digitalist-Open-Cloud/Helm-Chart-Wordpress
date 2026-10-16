@@ -1,0 +1,22 @@
+# Render combination: probes on both the php-fpm and nginx containers.
+wordpress:
+  livenessProbe:
+    tcpSocket:
+      port: php-fpm
+  readinessProbe:
+    tcpSocket:
+      port: php-fpm
+
+nginx:
+  livenessProbe:
+    httpGet:
+      path: /wp-admin/install.php
+      port: http
+      httpHeaders:
+        - name: X-Forwarded-Proto
+          value: https
+    initialDelaySeconds: 10
+    periodSeconds: 20
+  readinessProbe:
+    tcpSocket:
+      port: http

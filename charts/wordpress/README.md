@@ -1,6 +1,6 @@
 # wordpress
 
-![Version: 0.3.1](https://img.shields.io/badge/Version-0.3.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
+![Version: 0.3.2](https://img.shields.io/badge/Version-0.3.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
 
 A Helm chart to deploy WordPress in Kubernetes
 
@@ -81,7 +81,9 @@ A Helm chart to deploy WordPress in Kubernetes
 | ingress.tls | list | `[]` |  |
 | minioClientDownload | string | `"https://dl.min.io/aistor/mc/release/linux-amd64/mc"` |  |
 | nameOverride | string | `""` |  |
+| nginx.livenessProbe | object | `{}` |  |
 | nginx.pullPolicy | string | `"Always"` |  |
+| nginx.readinessProbe | object | `{}` |  |
 | nginx.repository | string | `"digitalist/nginx"` |  |
 | nginx.resources.limits.cpu | string | `"200m"` |  |
 | nginx.resources.limits.memory | string | `"256Mi"` |  |

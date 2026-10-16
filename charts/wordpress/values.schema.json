@@ -613,10 +613,22 @@
     "nginx": {
       "additionalProperties": false,
       "properties": {
+        "livenessProbe": {
+          "additionalProperties": true,
+          "description": "   httpGet:     path: /wp-admin/install.php     port: http     httpHeaders:       - name: X-Forwarded-Proto         value: https   initialDelaySeconds: 10   periodSeconds: 20 @schema additionalProperties: true @schema",
+          "required": [],
+          "title": "livenessProbe"
+        },
         "pullPolicy": {
           "default": "Always",
           "title": "pullPolicy",
           "type": "string"
+        },
+        "readinessProbe": {
+          "additionalProperties": true,
+          "description": "   tcpSocket:     port: http   initialDelaySeconds: 10   periodSeconds: 20 @schema additionalProperties: true @schema",
+          "required": [],
+          "title": "readinessProbe"
         },
         "repository": {
           "default": "digitalist/nginx",

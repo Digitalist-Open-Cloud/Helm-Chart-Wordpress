@@ -227,6 +227,14 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+          {{- with .Values.nginx.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.nginx.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - mountPath: /var/www/html/
               name: wordpress-app
