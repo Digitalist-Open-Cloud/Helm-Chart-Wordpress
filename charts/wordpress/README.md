@@ -1,6 +1,6 @@
 # wordpress
 
-![Version: 0.3.2](https://img.shields.io/badge/Version-0.3.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
+![Version: 0.3.3](https://img.shields.io/badge/Version-0.3.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
 
 A Helm chart to deploy WordPress in Kubernetes
 
@@ -94,7 +94,7 @@ A Helm chart to deploy WordPress in Kubernetes
 | nginx.securityContext.privileged | bool | `false` |  |
 | nginx.securityContext.runAsUser | int | `65532` | Uid of the digitalist/nginx image's own nonroot user, which owns its pre-created /var/lib/nginx directories; other uids get a Permission denied error there. |
 | nginx.stripPrefixes | list | `[]` |  |
-| nginx.tag | string | `"1.31.6-6"` |  |
+| nginx.tag | string | `"1.31.9-2"` |  |
 | nodeSelector | object | `{}` |  |
 | podAnnotations | object | `{}` |  |
 | podSecurityContext.fsGroup | int | `82` |  |
