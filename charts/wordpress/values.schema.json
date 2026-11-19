@@ -228,108 +228,42 @@
       "type": "object"
     },
     "env": {
+      "description": " type: array items:   type: object   additionalProperties: false   required: [name]   properties:     name:       type: string     value:       type: [string, number, boolean]     valueFromSecret:       type: object       additionalProperties: false       required: [secretName, key]       properties:         secretName:           type: string         key:           type: string @schema",
       "items": {
-        "anyOf": [
-          {
-            "additionalProperties": false,
-            "properties": {
-              "name": {
-                "default": "DB_HOST",
-                "title": "name",
-                "type": "string"
-              },
-              "value": {
-                "default": "database.default.svc.cluster.local:3306",
-                "title": "value",
-                "type": "string"
-              }
-            },
-            "required": [],
-            "type": "object"
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
           },
-          {
-            "additionalProperties": false,
-            "properties": {
-              "name": {
-                "default": "DB_NAME",
-                "title": "name",
-                "type": "string"
-              },
-              "value": {
-                "default": "db_wordpress",
-                "title": "value",
-                "type": "string"
-              }
-            },
+          "value": {
             "required": [],
-            "type": "object"
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
           },
-          {
+          "valueFromSecret": {
             "additionalProperties": false,
             "properties": {
-              "name": {
-                "default": "DB_USER",
-                "title": "name",
+              "key": {
                 "type": "string"
               },
-              "value": {
-                "default": "db_wordpress",
-                "title": "value",
+              "secretName": {
                 "type": "string"
               }
             },
-            "required": [],
-            "type": "object"
-          },
-          {
-            "additionalProperties": false,
-            "properties": {
-              "name": {
-                "default": "DB_PASSWORD",
-                "title": "name",
-                "type": "string"
-              },
-              "valueFromSecret": {
-                "additionalProperties": false,
-                "properties": {
-                  "key": {
-                    "default": "password",
-                    "title": "key",
-                    "type": "string"
-                  },
-                  "secretName": {
-                    "default": "mariadb",
-                    "title": "secretName",
-                    "type": "string"
-                  }
-                },
-                "required": [],
-                "title": "valueFromSecret",
-                "type": "object"
-              }
-            },
-            "required": [],
-            "type": "object"
-          },
-          {
-            "additionalProperties": false,
-            "properties": {
-              "name": {
-                "default": "DB_PREFIX",
-                "title": "name",
-                "type": "string"
-              },
-              "value": {
-                "default": "wp_",
-                "title": "value",
-                "type": "string"
-              }
-            },
-            "required": [],
+            "required": [
+              "secretName",
+              "key"
+            ],
             "type": "object"
           }
+        },
+        "required": [
+          "name"
         ],
-        "required": []
+        "type": "object"
       },
       "title": "env",
       "type": "array"
@@ -793,6 +727,12 @@
       "required": [],
       "title": "podSecurityContext",
       "type": "object"
+    },
+    "postStart": {
+      "default": "",
+      "description": "Shell command run in the wordpress container after it starts.",
+      "title": "postStart",
+      "type": "string"
     },
     "replicaCount": {
       "default": 1,

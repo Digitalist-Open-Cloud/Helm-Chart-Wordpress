@@ -102,6 +102,7 @@ A Helm chart to deploy WordPress in Kubernetes
 | podSecurityContext.runAsNonRoot | bool | `true` |  |
 | podSecurityContext.runAsUser | int | `82` |  |
 | podSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
+| postStart | string | `""` | Shell command run in the wordpress container after it starts. |
 | replicaCount | int | `1` |  |
 | resources.limits.cpu | string | `"200m"` |  |
 | resources.limits.memory | string | `"256Mi"` |  |

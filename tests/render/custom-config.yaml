@@ -18,3 +18,11 @@ customConfig:
 externalConfigMap:
   enabled: true
   name: my-external-wordpress-config
+
+postStart: "echo started"
+
+env:
+  - name: DB_HOST
+    value: database.default.svc.cluster.local:3306
+  - name: WP_MEMORY_LIMIT_MB
+    value: 256

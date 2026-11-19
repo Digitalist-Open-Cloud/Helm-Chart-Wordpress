@@ -58,6 +58,27 @@ nginx:
   # @schema
   readinessProbe: {}
 
+# @schema
+# type: array
+# items:
+#   type: object
+#   additionalProperties: false
+#   required: [name]
+#   properties:
+#     name:
+#       type: string
+#     value:
+#       type: [string, number, boolean]
+#     valueFromSecret:
+#       type: object
+#       additionalProperties: false
+#       required: [secretName, key]
+#       properties:
+#         secretName:
+#           type: string
+#         key:
+#           type: string
+# @schema
 env:
   - name: DB_HOST
     value: database.default.svc.cluster.local:3306
@@ -76,6 +97,11 @@ env:
 ##   - name: myRegistryKeySecretName
 ##
 imagePullSecrets: []
+# @schema
+# type: string
+# @schema
+# -- Shell command run in the wordpress container after it starts.
+postStart: ""
 nameOverride: ""
 fullnameOverride: ""
 
